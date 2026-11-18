@@ -78,3 +78,11 @@ dialog .check { display: flex; align-items: center; gap: 7px; margin: 14px 0 }
   .intro { align-items: start; flex-direction: column }
   .section-bar { flex-wrap: wrap }
 }
+
+.forecast { margin-top: 14px; font-size: .84rem }
+.forecast summary { cursor: pointer; font-weight: 650 }
+.forecast form { display: grid; gap: 9px; margin-top: 8px }
+.forecast label { display: grid; gap: 4px; min-width: 0 }
+.forecast input { width: 100%; min-width: 0 }
+.forecast .fields { margin: 0 }
+.forecast-result { font-size: .84rem; overflow-wrap: anywhere }

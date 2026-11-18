@@ -7,6 +7,9 @@ type Priority = 'moisture' | 'arrival'
 type Entry = Batch & { key: string }
 type History = { batch: Entry; at: string }
 type Workspace = { batches: Entry[]; history: History[]; priority: Priority; weather: Weather }
+type Forecast = { weather?: Weather; rain?: number[]; peak?: number; validUntil?: number; reason?: string;
+  evidence?: { receiptHash?: string; transaction?: string; provider?: string } }
+
 const storageKey = 'paddyturn.workspace.v1'
 const initial: Workspace = { batches: [], history: [], priority: 'moisture', weather: 'unknown' }
 const weatherOptions = [{ id: 'unknown', label: 'Unconfirmed' }, { id: 'dry', label: 'Dry window' }, { id: 'rain', label: 'Rain expected' }] as const
@@ -28,6 +31,8 @@ export default function Dashboard() {
   const dialog = useRef<HTMLDialogElement>(null)
   const [editing, setEditing] = useState<Entry | null>(null)
   const [error, setError] = useState('')
+  const [forecast, setForecast] = useState<Forecast>()
+  const [checking, setChecking] = useState(false)
   const [tab, setTab] = useState<'queue' | 'history'>('queue')
   useEffect(() => {
     try {
@@ -50,7 +55,42 @@ export default function Dashboard() {
   }
 
   const { batches, history, priority, weather } = workspace
-  const decision = schedule(batches, priority, weather)
+  const baseline = schedule(batches, priority, 'unknown')
+  const forecastCurrent = Boolean(forecast?.validUntil && forecast.validUntil > Date.now())
+  const conditions = forecast ? (forecastCurrent ? forecast.weather ?? 'unknown' : 'unknown') : weather
+  const decision = schedule(batches, priority, conditions)
+
+  useEffect(() => {
+    if (!forecast?.validUntil) return
+    const timer = window.setTimeout(() => setForecast(previous => previous && {
+      ...previous, weather: 'unknown', reason: 'Forecast expired. Check current conditions.',
+    }), Math.max(0, forecast.validUntil - Date.now()))
+    return () => window.clearTimeout(timer)
+  }, [forecast?.validUntil])
+
+  async function checkForecast(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (checking || !baseline.needsWeather) return
+    const form = new FormData(event.currentTarget)
+    setChecking(true)
+    setForecast({ reason: 'Checking forecast…' })
+    try {
+      const response = await fetch('/api/forecast', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-paddyturn-token': String(form.get('token')) },
+        body: JSON.stringify({
+          latitude: Number(form.get('latitude')), longitude: Number(form.get('longitude')),
+          hours: Number(form.get('hours')), threshold: Number(form.get('threshold')),
+        }),
+      })
+      const result: Forecast = await response.json()
+      setForecast(response.ok ? result : { reason: result.reason || 'Forecast unavailable.' })
+    } catch {
+      setForecast({ reason: 'Forecast unavailable. Check settlement before retrying.' })
+    } finally {
+      setChecking(false)
+    }
+  }
   const next = batches.find(batch => batch.id === decision.next?.id)
   const outdoor = decision.outdoor.map(batch => batch.id)
   const ordered = rankBatches(batches, priority)
@@ -76,6 +116,7 @@ export default function Dashboard() {
   }
 
   function record(batch: Entry) {
+    if (baseline.needsWeather && forecast && (!forecast.validUntil || forecast.validUntil <= Date.now())) return
     save({ ...workspace, batches: batches.filter(item => item.key !== batch.key),
       history: [{ batch, at: new Date().toISOString() }, ...history] })
   }
@@ -106,12 +147,37 @@ export default function Dashboard() {
           <img className="mill" src="/mill.svg" alt="" />
           <div className="next-copy"><p className="kicker">Planning</p><h2>Next dryer turn</h2>
             <p className="answer">{next?.id ?? (decision.review ? 'Check weather' : '—')}</p>
-            <p>{!batches.length ? 'Add a batch to start.' : decision.review ? 'Confirm the outdoor drying window.' : outdoor.length ? 'Outdoor candidates: ' + outdoor.join(', ') : 'Based on your queue priority.'}</p>
+            <p>{!batches.length ? 'Add a batch to start.' : decision.review ? forecast?.reason || 'Confirm the outdoor drying window.' : outdoor.length ? 'Outdoor candidates: ' + outdoor.join(', ') : 'Based on your queue priority.'}</p>
             {next && <button className="primary" onClick={() => record(next)}><Icon name="check" /> Assign to dryer</button>}
           </div>
         </section>
         <section className="card weather"><h2><Icon name="weather" /> Outdoor conditions</h2>
-          <div className="weather-options">{weatherOptions.map(option => <button key={option.id} disabled={!ready} aria-pressed={weather === option.id} onClick={() => save({ ...workspace, weather: option.id })}>{option.label}</button>)}</div>
+          <div className="weather-options">{weatherOptions.map(option => <button key={option.id} disabled={!ready || checking} aria-pressed={!forecast && weather === option.id} onClick={() => {
+            setForecast(undefined)
+            save({ ...workspace, weather: option.id })
+          }}>{option.label}</button>)}</div>
+          <details className="forecast">
+            <summary>Check forecast</summary>
+            <form onSubmit={checkForecast}>
+              <div className="fields">
+                <label>Latitude<input name="latitude" type="number" min="-90" max="90" step="any" defaultValue="16.78" required /></label>
+                <label>Longitude<input name="longitude" type="number" min="-180" max="180" step="any" defaultValue="94.73" required /></label>
+                <label>Window (hours)<input name="hours" type="number" min="1" max="6" defaultValue="3" required /></label>
+                <label>Rain limit (mm/h)<input name="threshold" type="number" min="0.01" max="10" step="0.01" defaultValue="0.2" required /></label>
+              </div>
+              <label>Forecast access token<input name="token" type="password" autoComplete="off" required /></label>
+              <button type="submit" disabled={!baseline.needsWeather || checking}>{checking ? 'Checking…' : 'Check with testnet USDC'}</button>
+              {!baseline.needsWeather && <p>The next batch does not need a forecast.</p>}
+            </form>
+          </details>
+          {forecast && <div className="forecast-result" aria-live="polite">
+            <p>{forecast.reason || (conditions === 'rain' ? 'Rain limit reached.' : conditions === 'dry' ? 'Below the rain limit.' : 'Forecast unavailable.')}</p>
+            {forecast.peak !== undefined && <p>Peak hourly rain: {forecast.peak} mm</p>}
+            {!!forecast.rain?.length && <p>Hourly rain: {forecast.rain.join(', ')} mm</p>}
+            {forecast.evidence?.receiptHash && <p>Receipt <code>{forecast.evidence.receiptHash}</code></p>}
+            {/^(0x)[0-9a-f]{64}$/i.test(forecast.evidence?.transaction || '') &&
+              <a href={`https://sepolia.etherscan.io/tx/${forecast.evidence?.transaction}`} target="_blank" rel="noreferrer">View Sepolia settlement</a>}
+          </div>}
         </section>
       </aside>
     </div>

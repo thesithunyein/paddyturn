@@ -15,7 +15,7 @@ PaddyTurn helps small rice mills and cooperative drying stations assign one mech
 
 1. **Add batches.** Enter arrival time, measured moisture, and outdoor drying eligibility.
 2. **Set the priority.** Rank by highest moisture or earliest arrival.
-3. **Record outdoor conditions.** Pick a dry window, expected rain, or unconfirmed conditions.
+3. **Record outdoor conditions.** Enter them manually or check Telegraph when weather could change the next assignment.
 4. **Assign the next batch.** Check the recommendation, then record the assignment in history.
 
 The queue, preferences, and history are stored in the current browser. Other devices have their own workspaces. Use physical moisture measurements and mill procedures for storage decisions.
@@ -45,14 +45,15 @@ flowchart TB
         UI <-->|Queue and assignments| Store[("Browser storage")]
         Rules --> UI
     end
-    subgraph Forecast["Separate forecast tools"]
-        Probe["CLI probe or protected API"] --> Client["x402 client with a payment cap"]
+    subgraph Forecast["Protected forecast service"]
+        Probe["CLI probe or workspace forecast check"] --> Client["x402 client with a payment cap"]
         Client -->|Sepolia request| Telegraph["Telegraph"]
         Telegraph -->|Forecast and receipt when available| Client
     end
+    UI -->|Weather-dependent decision| Probe
 ```
 
-Outdoor conditions in the workspace are operator-entered. Forecast tools run separately and do not write to the queue. [Scheduling rules](lib/schedule.ts) · [Forecast client](lib/telegraph.ts)
+A usable forecast informs the current recommendation. The operator confirms the assignment. Unavailable or expired data calls for operator review. [Scheduling rules](lib/schedule.ts) · [Forecast client](lib/telegraph.ts)
 
 ## Local development
 
@@ -67,6 +68,8 @@ npm run dev
 Open [localhost:3000](http://127.0.0.1:3000). Run `npm run build` to verify the production build.
 
 For provider discovery, run `npm run probe`. For a paid testnet forecast, copy [the environment template](.env.example) to `.env.local`, configure a dedicated Sepolia wallet funded with test USDC, then run `npm run probe -- --buy`. The probe reports the receipt when available. [Telegraph x402 documentation](https://anjoman.ai/docs/using/x402-inference)
+
+For the workspace forecast, also configure `LOCAL_FORECAST_TOKEN` and enter it in **Check forecast**. Only an authorized operator can request a purchase. Forecast evidence is session-only.
 
 ## Project policies
 
