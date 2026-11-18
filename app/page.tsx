@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import './landing.css'
+import QueuePreview from './queue-preview'
 
 const steps = [
   ['Add your batches', 'Enter when each batch arrived, its moisture reading, and whether it can dry outside.'],
@@ -37,23 +38,7 @@ export default function Landing() {
         <p>Enter your paddy batches, check the weather, and see which batch should use the dryer next.</p>
         <OpenWorkspace />
       </div>
-      <figure className="landing-preview">
-        <div className="preview-header"><strong>Waiting for the dryer</strong><span>Sample data</span></div>
-        <table>
-          <thead><tr><th scope="col">Batch</th><th scope="col">Arrival</th><th scope="col">Moisture</th></tr></thead>
-          <tbody><tr><th scope="row">PT-024</th><td>07:30</td><td>25%</td></tr><tr><th scope="row">PT-025</th><td>07:45</td><td>23%</td></tr></tbody>
-        </table>
-        <div className="preview-next">
-          <div className="grain-scene" aria-hidden="true">
-            <div className="grain-medallion">
-              <span className="grain-back" />
-              <span className="grain-rim" />
-              <span className="grain-face"><img src="/paddyturn.svg" alt="" /></span>
-            </div>
-          </div>
-          <div><span>Next dryer turn</span><strong>PT-024</strong><small>Rain expected</small></div>
-        </div>
-      </figure>
+      <QueuePreview />
     </section>
     <section id="how-it-works" className="landing-steps">
       <h2>How it works</h2>
