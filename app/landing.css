@@ -57,3 +57,8 @@
   from { opacity: 0; transform: translateY(9px) }
   to { opacity: 1; transform: translateY(0) }
 }
+
+.landing-preview { background: #fffdf7 }
+.preview-next { background: var(--green); color: var(--grain) }
+.preview-next span, .preview-next small { color: #e3eadb }
+.landing-steps li::marker { color: var(--green); font-weight: 700 }

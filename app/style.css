@@ -92,3 +92,18 @@ dialog .check { display: flex; align-items: center; gap: 7px; margin: 14px 0 }
 
 .assignment-notice { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; padding: 10px 14px; margin-bottom: 16px; border: 1px solid var(--line); border-radius: 12px; background: #eaf0e2; overflow-wrap: anywhere }
 .conditions-link { color: var(--green); font-size: .88rem; font-weight: 650; text-underline-offset: 3px }
+
+/* Colors from the rice-stalk mark. */
+:root { background: #faf8ef; --line: #e6e0d0; --green: #244c37; --grain: #f7e5ad }
+.top { border-bottom-color: var(--line) }
+.card { background: #fffdf7 }
+.next { background: var(--green); color: #fffaf0 }
+.next .answer { color: var(--grain) }
+.next-copy > p:not(.kicker):not(.answer) { color: #e3eadb }
+.next .primary { background: var(--grain); color: var(--green); border-color: var(--grain) }
+.next .conditions-link { color: var(--grain) }
+.next-copy { padding-right: 37% }
+@media (max-width: 450px) {
+  .next-copy { padding-right: 25% }
+  .next .mill { width: 33% }
+}

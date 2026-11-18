@@ -2,9 +2,9 @@ import Link from 'next/link'
 import './landing.css'
 
 const steps = [
-  ['Add incoming batches', 'Enter arrival time, measured moisture, and whether each batch can dry outdoors.'],
-  ['Check conditions', 'Record a dry window or expected rain to see how it affects the queue.'],
-  ['Assign the dryer', 'Confirm the next batch and keep a record in your assignment history.'],
+  ['Add your batches', 'Enter when each batch arrived, its moisture reading, and whether it can dry outside.'],
+  ['Check the weather', 'Tell PaddyTurn whether you expect dry weather or rain.'],
+  ['Choose the next batch', 'Confirm the batch going into the dryer. You’ll find it in History.'],
 ]
 
 const questions = [
@@ -32,13 +32,13 @@ export default function Landing() {
     </header>
     <section className="landing-hero">
       <div className="landing-copy">
-        <p className="kicker">For small rice mills</p>
+        
         <h1>Know which paddy batch to dry next.</h1>
-        <p>Rank incoming batches by moisture or arrival time. Check outdoor conditions before assigning the next dryer turn.</p>
+        <p>Enter your paddy batches, check the weather, and see which batch should use the dryer next.</p>
         <OpenWorkspace />
       </div>
       <figure className="landing-preview">
-        <div className="preview-header"><strong>Dryer queue</strong><span>Sample data</span></div>
+        <div className="preview-header"><strong>Waiting for the dryer</strong><span>Sample data</span></div>
         <table>
           <thead><tr><th scope="col">Batch</th><th scope="col">Arrival</th><th scope="col">Moisture</th></tr></thead>
           <tbody><tr><th scope="row">PT-024</th><td>07:30</td><td>25%</td></tr><tr><th scope="row">PT-025</th><td>07:45</td><td>23%</td></tr></tbody>

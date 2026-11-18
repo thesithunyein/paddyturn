@@ -13,7 +13,7 @@ type Forecast = { weather?: Weather; rain?: number[]; peak?: number; validUntil?
 
 const storageKey = 'paddyturn.workspace.v1'
 const initial: Workspace = { batches: [], history: [], priority: 'moisture', weather: 'unknown' }
-const weatherOptions = [{ id: 'unknown', label: 'Unconfirmed' }, { id: 'dry', label: 'Dry window' }, { id: 'rain', label: 'Rain expected' }] as const
+const weatherOptions = [{ id: 'unknown', label: 'Not sure' }, { id: 'dry', label: 'Dry weather' }, { id: 'rain', label: 'Rain likely' }] as const
 
 function Icon({ name }: { name: 'plus' | 'queue' | 'weather' | 'edit' | 'check' | 'close' }) {
   const paths = {
@@ -126,7 +126,7 @@ export default function Dashboard() {
 
   return <main>
     <header className="top"><Link href="/" className="brand home-link"><img src="/paddyturn.svg" alt="" width="42" height="42" /><strong>PaddyTurn</strong></Link><span>Mill workspace</span></header>
-    <div className="intro"><div><p className="kicker">Mill operations</p><h1>Dryer queue</h1><p>Plan the next dryer turn.</p></div>
+    <div className="intro"><div><h1>Dryer queue</h1></div>
       <button className="primary" disabled={!ready} onClick={() => { setTab('queue'); open() }}><Icon name="plus" /> Add batch</button></div>
     {storageError && <p role="alert" className="error">Browser storage is unavailable. Changes may be lost when you leave.</p>}
     {assigned && <div className="assignment-notice" role="status">
@@ -140,7 +140,7 @@ export default function Dashboard() {
           <button aria-pressed={tab === 'history'} onClick={() => setTab('history')}>History <span>{history.length}</span></button>
         </div>
         {tab === 'queue' ? <>
-          <div className="section-bar"><h2>Incoming batches</h2><label>Priority <select disabled={!ready} value={priority} onChange={e => save({ ...workspace, priority: e.target.value as Priority })}><option value="moisture">Highest moisture</option><option value="arrival">Earliest arrival</option></select></label></div>
+          <div className="section-bar"><h2>Waiting batches</h2><label>Sort by <select disabled={!ready} value={priority} onChange={e => save({ ...workspace, priority: e.target.value as Priority })}><option value="moisture">Wettest first</option><option value="arrival">First to arrive</option></select></label></div>
           {ordered.length ? <div className="scroll"><table><thead><tr><th>Batch</th><th>Arrival</th><th>Moisture</th><th>Outdoor</th><th><span className="sr">Actions</span></th></tr></thead>
             <tbody>{ordered.map(batch => <tr key={batch.key}><th scope="row">{batch.id}</th><td>{batch.arrival}</td><td>{batch.moisture}%</td><td>{batch.outdoor ? 'Eligible' : '—'}</td><td><button className="icon-button" aria-label={'Edit ' + batch.id} onClick={() => open(batch)}><Icon name="edit" /></button></td></tr>)}</tbody></table></div>
             : <div className="empty"><div className="tile"><Icon name="queue" /></div><h3>{ready ? 'No batches in queue' : 'Opening workspace…'}</h3><p>Add a batch when it arrives at the mill.</p><button disabled={!ready} onClick={() => open()}>Add first batch</button></div>}
@@ -152,14 +152,14 @@ export default function Dashboard() {
       <aside className="side">
         <section className="card next" aria-live="polite">
           <img className="mill" src="/mill.svg" alt="" />
-          <div className="next-copy"><p className="kicker">Planning</p><h2>Next dryer turn</h2>
+          <div className="next-copy"><h2>Next batch to dry</h2>
             <p className="answer">{next?.id ?? (decision.review ? 'Check weather' : '—')}</p>
-            <p>{!batches.length ? 'Add a batch to start.' : decision.review ? forecast?.reason || 'Choose dry weather or expected rain to see the next batch.' : outdoor.length ? 'Can dry outdoors: ' + outdoor.join(', ') : 'Based on your queue priority.'}</p>
-            {decision.review && <a className="conditions-link" href="#outdoor-conditions">Set outdoor conditions</a>}
+            <p>{!batches.length ? 'Add a batch to start.' : decision.review ? forecast?.reason || 'Choose the weather below to see which batch goes next.' : outdoor.length ? 'Can dry outdoors: ' + outdoor.join(', ') : 'First in your queue.'}</p>
+            {decision.review && <a className="conditions-link" href="#outdoor-conditions">Set the weather</a>}
             {next && <button className="primary" onClick={() => record(next)}><Icon name="check" /> Assign to dryer</button>}
           </div>
         </section>
-        <section id="outdoor-conditions" className="card weather"><h2><Icon name="weather" /> Outdoor conditions</h2>
+        <section id="outdoor-conditions" className="card weather"><h2><Icon name="weather" /> Weather for outdoor drying</h2>
           <div className="weather-options">{weatherOptions.map(option => <button key={option.id} disabled={!ready || checking} aria-pressed={!forecast && weather === option.id} onClick={() => {
             setForecast(undefined)
             save({ ...workspace, weather: option.id })
@@ -173,9 +173,9 @@ export default function Dashboard() {
                 <label>Window (hours)<input name="hours" type="number" min="1" max="6" defaultValue="3" required /></label>
                 <label>Rain limit (mm/h)<input name="threshold" type="number" min="0.01" max="10" step="0.01" defaultValue="0.2" required /></label>
               </div>
-              <p>Use the access token from your workspace administrator.</p>
-              <label>Forecast access token<input name="token" type="password" autoComplete="off" required /></label>
-              <button type="submit" disabled={!baseline.needsWeather || checking}>{checking ? 'Checking…' : 'Check with testnet USDC'}</button>
+              <p>Ask your mill manager for the forecast access code.</p>
+              <label>Forecast access code<input name="token" type="password" autoComplete="off" required /></label>
+              <button type="submit" disabled={!baseline.needsWeather || checking}>{checking ? 'Checking…' : 'Get testnet forecast'}</button>
               {!baseline.needsWeather && <p>The next batch does not need a forecast.</p>}
             </form>
           </details>
@@ -195,7 +195,7 @@ export default function Dashboard() {
         <div className="section-bar"><h2>{editing.key ? 'Edit batch' : 'Add batch'}</h2><button type="button" className="icon-button" aria-label="Close" onClick={() => setEditing(null)}><Icon name="close" /></button></div>
         <label>Batch ID<input name="id" required autoFocus maxLength={32} defaultValue={editing.id} placeholder="e.g. PT-024" /></label>
         <div className="fields"><label>Arrival<input name="arrival" type="time" required defaultValue={editing.arrival} /></label>
-          <label>Moisture (%)<input name="moisture" type="number" min="0" max="100" step="0.1" required defaultValue={Number.isFinite(editing.moisture) ? editing.moisture : ''} /></label></div>
+          <label>Moisture reading (%)<input name="moisture" type="number" min="0" max="100" step="0.1" required defaultValue={Number.isFinite(editing.moisture) ? editing.moisture : ''} /></label></div>
         <label className="check"><input type="checkbox" name="outdoor" defaultChecked={editing.outdoor} /> This batch can dry outdoors</label>
         {error && <p role="alert" className="error">{error}</p>}
         <div className="actions">{editing.key && <button type="button" className="remove" onClick={() => {
