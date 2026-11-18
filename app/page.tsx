@@ -1,95 +1,132 @@
 'use client'
 
-import { useState } from 'react'
-import { sample, schedule, type Batch, type Weather } from '../lib/schedule'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { rankBatches, schedule, type Batch, type Weather } from '../lib/schedule'
 
-type Forecast = { weather?: Weather; rain?: number[]; peak?: number; reason?: string;
-  evidence?: { provider?: string; cost?: number; receiptHash?: string; signalHash?: string; transaction?: string } }
+type Priority = 'moisture' | 'arrival'
+type Entry = Batch & { key: string }
+type History = { batch: Entry; at: string }
+type Workspace = { batches: Entry[]; history: History[]; priority: Priority; weather: Weather }
+const storageKey = 'paddyturn.workspace.v1'
+const initial: Workspace = { batches: [], history: [], priority: 'moisture', weather: 'unknown' }
+const weatherOptions = [{ id: 'unknown', label: 'Unconfirmed' }, { id: 'dry', label: 'Dry window' }, { id: 'rain', label: 'Rain expected' }] as const
+
+function Icon({ name }: { name: 'plus' | 'queue' | 'weather' | 'edit' | 'check' | 'close' }) {
+  const paths = {
+    plus: 'M12 5v14M5 12h14', queue: 'M4 6h16M4 12h16M4 18h10',
+    weather: 'M4 16h13a4 4 0 1 0-1-7.9A6 6 0 0 0 4 12a2 2 0 0 0 0 4Zm4 4h8',
+    edit: 'm4 16 12-12 4 4L8 20H4v-4Zm10-10 4 4',
+    check: 'm5 12 4 4L19 6', close: 'm6 6 12 12M18 6 6 18',
+  }
+  return <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name]} /></svg>
+}
 
 export default function Dashboard() {
-  const [batches, setBatches] = useState(sample)
-  const [priority, setPriority] = useState<'moisture' | 'arrival'>('moisture')
-  const [mode, setMode] = useState('dry')
-  const [output, setOutput] = useState<Forecast>()
-  const [busy, setBusy] = useState(false)
-  const [token, setToken] = useState('')
-  const [latitude, setLatitude] = useState('16.78')
-  const [longitude, setLongitude] = useState('94.73')
-  const [hours, setHours] = useState('3')
-  const [threshold, setThreshold] = useState('0.2')
-  const plan = schedule(batches, priority, 'unknown')
-  const weather = mode === 'live' ? output?.weather || 'unknown' : mode as Weather
-  const decision = schedule(batches, priority, weather)
-  const valid = batches.every(batch => /^([01]\d|2[0-3]):[0-5]\d$/.test(batch.arrival)
-    && Number.isFinite(batch.moisture) && batch.moisture >= 0 && batch.moisture <= 100)
-  const update = (index: number, fields: Partial<Batch>) => {
-    setBatches(current => current.map((batch, i) => i === index ? { ...batch, ...fields } : batch))
-    setOutput(undefined)
+  const [workspace, setWorkspace] = useState(initial)
+  const [ready, setReady] = useState(false)
+  const [storageError, setStorageError] = useState(false)
+  const dialog = useRef<HTMLDialogElement>(null)
+  const [editing, setEditing] = useState<Entry | null>(null)
+  const [error, setError] = useState('')
+  const [tab, setTab] = useState<'queue' | 'history'>('queue')
+  useEffect(() => {
+    try {
+      const data = localStorage.getItem(storageKey)
+      if (data) setWorkspace(JSON.parse(data))
+    } catch { setStorageError(true) }
+    setReady(true)
+  }, [])
+
+  useEffect(() => {
+    if (editing && dialog.current && !dialog.current.open) dialog.current.showModal()
+  }, [editing])
+
+  function save(next: Workspace) {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(next))
+      setStorageError(false)
+    } catch { setStorageError(true) }
+    setWorkspace(next)
   }
 
-  async function run() {
-    if (!valid || !plan.needsWeather || busy || output) return
-    setBusy(true)
-    try {
-      const response = await fetch('/api/forecast', {
-        method: 'POST', headers: { 'Content-Type': 'application/json', 'x-paddyturn-token': token },
-        body: JSON.stringify({ latitude: Number(latitude), longitude: Number(longitude), hours: Number(hours), threshold: Number(threshold) }),
-      })
-      setOutput(await response.json())
-    } catch {
-      setOutput({ reason: 'The forecast service did not respond. Check settlement before trying again.' })
-    } finally {
-      setBusy(false)
+  const { batches, history, priority, weather } = workspace
+  const decision = schedule(batches, priority, weather)
+  const next = batches.find(batch => batch.id === decision.next?.id)
+  const outdoor = decision.outdoor.map(batch => batch.id)
+  const ordered = rankBatches(batches, priority)
+
+  function open(batch?: Entry) {
+    setError('')
+    setEditing(batch ?? { key: '', id: '', arrival: new Date().toTimeString().slice(0, 5), moisture: NaN, outdoor: false })
+  }
+
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (!editing) return
+    const form = new FormData(event.currentTarget)
+    const id = String(form.get('id')).trim()
+    if (!id || batches.some(batch => batch.key !== editing.key && batch.id.toLowerCase() === id.toLowerCase())) {
+      setError('Enter a unique batch ID.')
+      return
     }
+    const entry = { key: editing.key || crypto.randomUUID(), id, arrival: String(form.get('arrival')),
+      moisture: Number(form.get('moisture')), outdoor: form.has('outdoor') }
+    save({ ...workspace, batches: editing.key ? batches.map(batch => batch.key === editing.key ? entry : batch) : [...batches, entry] })
+    setEditing(null)
+  }
+
+  function record(batch: Entry) {
+    save({ ...workspace, batches: batches.filter(item => item.key !== batch.key),
+      history: [{ batch, at: new Date().toISOString() }, ...history] })
   }
 
   return <main>
-    <header><div className="mark" aria-hidden="true">PT</div><strong>PaddyTurn</strong><span>Shift planning</span></header>
-    <section className="hero"><p>Ayeyarwady Delta · Mill operations</p><h1>Know which paddy<br />batch to dry next.</h1></section>
+    <header className="top"><div className="brand"><img src="/paddyturn.svg" alt="" width="42" height="42" /><strong>PaddyTurn</strong></div><span>Mill workspace</span></header>
+    <div className="intro"><div><p className="kicker">Mill operations</p><h1>Dryer queue</h1><p>Plan the next dryer turn.</p></div>
+      <button className="primary" disabled={!ready} onClick={() => { setTab('queue'); open() }}><Icon name="plus" /> Add batch</button></div>
+    {storageError && <p role="alert" className="error">Browser storage is unavailable. Changes may be lost when you leave.</p>}
     <div className="grid">
-      <section className="panel">
-        <h2>Incoming batches</h2>
-        <label className="priority">Priority <select disabled={busy} value={priority} onChange={e => {
-          setPriority(e.target.value as typeof priority); setOutput(undefined)
-        }}><option value="moisture">Highest measured moisture</option><option value="arrival">Earliest arrival</option></select></label>
-        <div className="scroll"><table><thead><tr><th>Batch</th><th>Arrival</th><th>Moisture %</th><th>Outdoor</th></tr></thead>
-          <tbody>{batches.map((batch, i) => <tr key={batch.id}>
-            <th scope="row">{batch.id}</th>
-            <td><input aria-label={batch.id + ' arrival'} disabled={busy} type="time" value={batch.arrival} onChange={e => update(i, { arrival: e.target.value })} /></td>
-            <td><input aria-label={batch.id + ' moisture'} disabled={busy} type="number" min="0" max="100" step="0.1" value={Number.isNaN(batch.moisture) ? '' : batch.moisture} onChange={e => update(i, { moisture: e.target.valueAsNumber })} /></td>
-            <td><input aria-label={batch.id + ' eligible for outdoor drying'} disabled={busy} type="checkbox" checked={batch.outdoor} onChange={e => update(i, { outdoor: e.target.checked })} /></td>
-          </tr>)}</tbody></table></div>
-        <h2>Weather evidence</h2>
-        <div className="modes" aria-label="Weather mode">{[['dry','Dry replay'],['rain','Rain replay'],['unknown','Unavailable replay'],['live','Live testnet']].map(([value,label]) =>
-          <button key={value} disabled={busy} aria-pressed={mode === value} onClick={() => { setMode(value); setOutput(undefined) }}>{label}</button>)}</div>
-        {mode === 'live' && <div className="live">
-          {([['Latitude',latitude,setLatitude],['Longitude',longitude,setLongitude],['Hours',hours,setHours],['Rain threshold mm/h',threshold,setThreshold],['Local access token',token,setToken]] as const).map(([label,value,set]) =>
-            <label key={label}>{label}<input disabled={busy} type={label === 'Local access token' ? 'password' : 'number'}
-              value={value} onChange={e => { set(e.target.value); setOutput(undefined) }} /></label>)}
-          <button className="primary" disabled={busy || !valid || !plan.needsWeather || !token || !latitude || !longitude || !!output} onClick={run}>{busy ? 'Checking Telegraph…' : 'Run live assessment'}</button>
-        </div>}
+      <section className="card queue">
+        <div className="tabs" aria-label="Workspace view">
+          <button aria-pressed={tab === 'queue'} onClick={() => setTab('queue')}>Queue <span>{batches.length}</span></button>
+          <button aria-pressed={tab === 'history'} onClick={() => setTab('history')}>History <span>{history.length}</span></button>
+        </div>
+        {tab === 'queue' ? <>
+          <div className="section-bar"><h2>Incoming batches</h2><label>Priority <select disabled={!ready} value={priority} onChange={e => save({ ...workspace, priority: e.target.value as Priority })}><option value="moisture">Highest moisture</option><option value="arrival">Earliest arrival</option></select></label></div>
+          {ordered.length ? <div className="scroll"><table><thead><tr><th>Batch</th><th>Arrival</th><th>Moisture</th><th>Outdoor</th><th><span className="sr">Actions</span></th></tr></thead>
+            <tbody>{ordered.map(batch => <tr key={batch.key}><th scope="row">{batch.id}</th><td>{batch.arrival}</td><td>{batch.moisture}%</td><td>{batch.outdoor ? 'Eligible' : '—'}</td><td><button className="icon-button" aria-label={'Edit ' + batch.id} onClick={() => open(batch)}><Icon name="edit" /></button></td></tr>)}</tbody></table></div>
+            : <div className="empty"><div className="tile"><Icon name="queue" /></div><h3>{ready ? 'No batches in queue' : 'Opening workspace…'}</h3><p>Add a batch when it arrives at the mill.</p><button disabled={!ready} onClick={() => open()}>Add first batch</button></div>}
+        </> : <><div className="section-bar"><h2>Dryer history</h2></div>{history.length ? <div className="scroll"><table><thead><tr><th>Batch</th><th>Moisture</th><th>Assigned at</th></tr></thead><tbody>
+          {history.map(item => <tr key={item.batch.key}><th scope="row">{item.batch.id}</th><td>{item.batch.moisture}%</td><td>{new Date(item.at).toLocaleString()}</td></tr>)}
+          </tbody></table></div> : <div className="empty"><h3>No dryer assignments yet</h3><p>Assigned batches appear here.</p></div>}</>}
+        <footer>Saved in this browser</footer>
       </section>
-      <section className="panel result" aria-live="polite">
-        <p className="eyebrow">{mode === 'live' ? 'Ethereum Sepolia' : 'Simulated forecast replay'}</p>
-        <h2>Next dryer turn</h2>
-        <p className="answer">{!valid ? 'Check inputs' : decision.review ? 'Operator review' : decision.next?.id || 'No dryer batch'}</p>
-        <p>{!valid ? 'Enter a valid arrival time and moisture reading for each batch.'
-          : !plan.needsWeather ? 'The first-ranked batch requires the dryer. No forecast purchase is needed.'
-          : decision.review ? output?.reason || 'A usable forecast is needed to choose the next batch.'
-          : weather === 'dry' ? 'The first-ranked batch can be considered for outdoor drying in this dry window.'
-          : 'Rain keeps the first-ranked batch in the mechanical dryer queue.'}</p>
-        {valid && <dl><div><dt>Original priority</dt><dd>{decision.baseline?.id}</dd></div>
-          <div><dt>Outdoor candidates</dt><dd>{decision.outdoor.map(batch => batch.id).join(', ') || 'None'}</dd></div>
-          {output?.peak !== undefined && <div><dt>Peak hourly rain (mm)</dt><dd>{output.peak}</dd></div>}
-          {output?.rain?.length ? <div><dt>Hourly rain (mm)</dt><dd>{output.rain.join(', ')}</dd></div> : null}
-        </dl>}
-        {output?.evidence && <div className="evidence"><h3>Telegraph purchase</h3><p>Provider {output.evidence.provider || 'Unknown'}</p>
-          <p>Testnet cost {output.evidence.cost ?? 'Unavailable'}</p><p>Receipt <code>{output.evidence.receiptHash}</code></p>
-          <p>Signal <code>{output.evidence.signalHash}</code></p>
-          {/^0x[0-9a-f]{64}$/i.test(output.evidence.transaction || '') && <a href={'https://sepolia.etherscan.io/tx/' + output.evidence.transaction} target="_blank" rel="noreferrer">View settlement</a>}
-        </div>}
-        <p className="foot">Use measured moisture and your mill’s procedures for storage decisions.</p>
-      </section>
+      <aside className="side">
+        <section className="card next" aria-live="polite">
+          <img className="mill" src="/mill.svg" alt="" />
+          <div className="next-copy"><p className="kicker">Planning</p><h2>Next dryer turn</h2>
+            <p className="answer">{next?.id ?? (decision.review ? 'Check weather' : '—')}</p>
+            <p>{!batches.length ? 'Add a batch to start.' : decision.review ? 'Confirm the outdoor drying window.' : outdoor.length ? 'Outdoor candidates: ' + outdoor.join(', ') : 'Based on your queue priority.'}</p>
+            {next && <button className="primary" onClick={() => record(next)}><Icon name="check" /> Assign to dryer</button>}
+          </div>
+        </section>
+        <section className="card weather"><h2><Icon name="weather" /> Outdoor conditions</h2>
+          <div className="weather-options">{weatherOptions.map(option => <button key={option.id} disabled={!ready} aria-pressed={weather === option.id} onClick={() => save({ ...workspace, weather: option.id })}>{option.label}</button>)}</div>
+        </section>
+      </aside>
     </div>
+    {editing && <dialog ref={dialog} aria-label={editing.key ? 'Edit batch' : 'Add batch'} onCancel={() => setEditing(null)}>
+      <form onSubmit={submit}>
+        <div className="section-bar"><h2>{editing.key ? 'Edit batch' : 'Add batch'}</h2><button type="button" className="icon-button" aria-label="Close" onClick={() => setEditing(null)}><Icon name="close" /></button></div>
+        <label>Batch ID<input name="id" required autoFocus maxLength={32} defaultValue={editing.id} placeholder="e.g. PT-024" /></label>
+        <div className="fields"><label>Arrival<input name="arrival" type="time" required defaultValue={editing.arrival} /></label>
+          <label>Moisture (%)<input name="moisture" type="number" min="0" max="100" step="0.1" required defaultValue={Number.isFinite(editing.moisture) ? editing.moisture : ''} /></label></div>
+        <label className="check"><input type="checkbox" name="outdoor" defaultChecked={editing.outdoor} /> Eligible for outdoor drying</label>
+        {error && <p role="alert" className="error">{error}</p>}
+        <div className="actions">{editing.key && <button type="button" className="remove" onClick={() => {
+          save({ ...workspace, batches: batches.filter(batch => batch.key !== editing.key) }); setEditing(null)
+        }}>Remove batch</button>}<button className="primary" type="submit">Save batch</button></div>
+      </form>
+    </dialog>}
   </main>
 }
