@@ -2,7 +2,7 @@
 .landing .top { padding: 17px 0; border-color: var(--landing-rule) }
 .landing-links { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 22px }
 .landing-nav { color: var(--muted); text-decoration: none; font-size: .875rem }
-.landing-nav:hover { text-decoration: underline }
+.landing-nav:is(:hover, :active) { color: var(--green) }
 .landing-hero {
   display: grid;
   grid-template-columns: minmax(0, .88fr) minmax(0, 1.12fr);
@@ -27,7 +27,7 @@
 .landing-questions summary { cursor: pointer; padding: 12px 0; font-size: .92rem; font-weight: 650 }
 .landing-questions p { padding: 0 0 13px }
 .landing-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; padding: 19px 0 0 }
-.landing-footer .landing-links a { color: var(--muted); text-underline-offset: 3px }
+.landing-footer .landing-links a { color: var(--muted); }
 @media (max-width: 760px) {
   .landing-hero, .landing-steps ol, .landing-faq { grid-template-columns: 1fr }
   .landing-hero { gap: 24px }
@@ -59,3 +59,5 @@
   .landing-operation img { width: min(100%, 320px) }
   .landing-operation > div { padding: 18px }
 }
+
+.landing-footer .landing-links a:is(:hover, :active) { color: var(--green) }

@@ -1,7 +1,8 @@
 <div align="center">
   <img src="public/paddyturn.svg" width="76" height="76" alt="PaddyTurn rice-stalk logo">
   <h1>PaddyTurn</h1>
-  <p><strong>Know which paddy batch to dry next.</strong></p>
+  <p><strong>Know what to dry next.</strong></p>
+  <p><a href="https://paddyturn.vercel.app/">Product homepage</a> · <a href="https://paddyturn.vercel.app/app">Mill workspace</a></p>
 
   [![Open workspace](https://img.shields.io/badge/Open_workspace-244c37?style=for-the-badge&logo=vercel&logoColor=white)](https://paddyturn.vercel.app/app)
   [![Next.js 16](https://img.shields.io/badge/Next.js-16-181818?style=for-the-badge&logo=nextdotjs)](package.json)
@@ -14,7 +15,7 @@
 PaddyTurn helps small rice mills and cooperative drying stations assign one mechanical dryer slot when several paddy batches arrive together.
 
 1. **Add batches.** Enter arrival time, measured moisture, and outdoor drying eligibility.
-2. **Set the priority.** Rank by highest moisture or earliest arrival.
+2. **Set the priority.** Choose **Wettest first** or **First to arrive**.
 3. **Record outdoor conditions.** Enter them manually or check Telegraph when weather could change the next assignment.
 4. **Assign the next batch.** Check the recommendation, then record the assignment in history.
 
@@ -69,7 +70,13 @@ Open [localhost:3000](http://127.0.0.1:3000/app). Run `npm run build` to verify 
 
 For provider discovery, run `npm run probe`. For a paid testnet forecast, copy [the environment template](.env.example) to `.env.local`, configure a dedicated Sepolia wallet funded with test USDC, then run `npm run probe -- --buy`. The probe reports the receipt when available. [Telegraph x402 documentation](https://anjoman.ai/docs/using/x402-inference)
 
-For the workspace forecast, also configure `LOCAL_FORECAST_TOKEN` and enter it in **Check forecast**. Only an authorized operator can request a purchase. Forecast evidence is session-only.
+For the workspace forecast, also configure `LOCAL_FORECAST_TOKEN` and enter it in **Optional forecast check**. Only an authorized operator can request a purchase. Forecast evidence is session-only.
+
+## Verification
+
+- **Workspace:** Browser walkthrough verified adding batches, switching weather choices, recording a dryer assignment, and recovering it from History after reload. The walkthrough used test batches.
+- **Forecast:** Telegraph returned an x402 payment quote for the Pathein request. A funded Sepolia purchase, usable forecast response, and receipt have yet to be verified end to end.
+- **Field use:** A mill-operator walkthrough and independent reproduction are still pending.
 
 ## Project policies
 
