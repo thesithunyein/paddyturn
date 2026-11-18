@@ -31,11 +31,13 @@ export default function Landing() {
     <div className="landing-progress" aria-hidden="true" />
     <section className="landing-hero">
       <div className="landing-copy">
-        <h1>Know what to dry next.</h1>
-        <p>A dryer queue for rice mills. Add your batches, check the weather, and choose what goes in next.</p>
+        <h1>Plan your next dryer turn.</h1>
+        <p>Add your paddy batches, check the weather, and see which batch should go in next.</p>
         <OpenWorkspace />
       </div>
-      <img className="drying-floor" src="/drying-floor.svg" alt="Illustration of a rice mill beside two outdoor paddy drying beds" width="620" height="430" />
+      <div className="drying-floor-frame">
+        <img className="drying-floor" src="/drying-floor.svg?v=2" alt="Illustration of a rice mill beside two outdoor paddy drying beds" width="620" height="430" />
+      </div>
     </section>
     <section id="how-it-works" className="landing-steps">
       <h2>How it works</h2>
