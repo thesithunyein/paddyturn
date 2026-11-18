@@ -153,7 +153,7 @@ export default function Dashboard() {
         <section className="card next" aria-live="polite">
           <img className="mill" src="/mill.svg" alt="" />
           <div className="next-copy"><h2>Next batch to dry</h2>
-            <p className="answer">{next?.id ?? (decision.review ? 'Check weather' : outdoor.length ? 'Dry outdoors' : '—')}</p>
+            <p className="answer" key={next?.id ?? (decision.review ? 'review' : outdoor.length ? 'outdoor' : 'empty')}>{next?.id ?? (decision.review ? 'Check weather' : outdoor.length ? 'Dry outdoors' : '—')}</p>
             <p>{!batches.length ? 'Add a batch to start.' : decision.review ? forecast?.reason || decision.baseline?.id + ' can dry outdoors. Check the weather before assigning it.' : outdoor.length ? 'Can dry outdoors: ' + outdoor.join(', ') : conditions === 'rain' && decision.baseline?.outdoor ? 'Rain keeps this batch in the dryer queue.' : priority === 'moisture' ? 'Highest moisture reading in the queue.' : 'First to arrive.'}</p>
             {decision.review && <a className="conditions-link" href="#outdoor-conditions">Set the weather</a>}
             {next && <dl className="next-facts"><div><dt>Moisture</dt><dd>{next.moisture}%</dd></div><div><dt>Arrival</dt><dd>{next.arrival}</dd></div></dl>}

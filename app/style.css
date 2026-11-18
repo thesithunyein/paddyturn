@@ -138,3 +138,13 @@ input, select { max-width: 100% }
 @media (max-width: 760px) {
   .queue-active .side { order: -1 }
 }
+
+@media (prefers-reduced-motion: no-preference) {
+  .next .answer { animation: recommendation-update 260ms ease-out both }
+  button { transition: background-color .16s ease, border-color .16s ease, color .16s ease, transform .16s ease }
+  button:enabled:active { transform: scale(.98) }
+}
+@keyframes recommendation-update {
+  from { opacity: .5; transform: translateY(5px) }
+  to { opacity: 1; transform: translateY(0) }
+}
