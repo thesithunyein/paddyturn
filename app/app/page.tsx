@@ -10,7 +10,7 @@ type History = { batch: Entry; at: string; forecast?: Forecast }
 type Workspace = { batches: Entry[]; history: History[]; priority: Priority; weather: Weather }
 type Forecast = { weather?: Weather; rain?: number[]; peak?: number; validUntil?: number; reason?: string;
   windowStart?: number; threshold?: number;
-  evidence?: { receiptHash?: string; transaction?: string; provider?: string; intent?: string; miner?: string; cost?: number; signalHash?: string } }
+  evidence?: { billing?: 'anjoman'; jobId?: string; receiptHash?: string; transaction?: string; provider?: string; intent?: string; miner?: string; cost?: number; signalHash?: string } }
 
 const storageKey = 'paddyturn.workspace.v1'
 const initial: Workspace = { batches: [], history: [], priority: 'moisture', weather: 'unknown' }
@@ -35,10 +35,11 @@ function ForecastEvidence({ forecast }: { forecast: Forecast }) {
     {peak !== undefined && <p>Peak hourly rain: {peak} mm</p>}
     {!!rain?.length && <p>Hourly rain: {rain.join(', ')} mm</p>}
     {evidence && <>
-      <p>Network: Ethereum Sepolia</p>
+      <p>{evidence.billing === 'anjoman' ? 'Billing: Anjoman escrow' : 'Network: Ethereum Sepolia'}</p>
+      {evidence.jobId && <p>Job ID: <code>{evidence.jobId}</code></p>}
       {evidence.intent && <p>Intent: <code>{evidence.intent}</code></p>}
       {(evidence.provider || evidence.miner) && <p>Provider: {evidence.provider || evidence.miner}</p>}
-      {typeof evidence.cost === 'number' && <p>Cost: {evidence.cost} USDC (testnet)</p>}
+      {typeof evidence.cost === 'number' && <p>Cost: {evidence.cost} USDC{evidence.billing === 'anjoman' ? '' : ' (testnet)'}</p>}
       {evidence.receiptHash && <p>Receipt: <code>{evidence.receiptHash}</code></p>}
       {evidence.signalHash && <p>Signal: <code>{evidence.signalHash}</code></p>}
       {/^(0x)[0-9a-f]{64}$/i.test(evidence.transaction || '') &&
@@ -141,7 +142,7 @@ export default function Dashboard() {
 
   function record(batch: Entry) {
     if (baseline.needsWeather && forecast && (!forecast.validUntil || forecast.validUntil <= Date.now())) return
-    const usedForecast = baseline.needsWeather && forecast?.evidence?.receiptHash && conditions !== 'unknown' ? forecast : undefined
+    const usedForecast = baseline.needsWeather && (forecast?.evidence?.receiptHash || forecast?.evidence?.jobId) && conditions !== 'unknown' ? forecast : undefined
     save({ ...workspace, batches: batches.filter(item => item.key !== batch.key),
       history: [{ batch, at: new Date().toISOString(), forecast: usedForecast }, ...history] })
     setAssigned(batch.id)
@@ -199,7 +200,7 @@ export default function Dashboard() {
               </div>
               <p>Ask your mill manager for the forecast access code.</p>
               <label>Forecast access code<input name="token" type="password" autoComplete="off" required /></label>
-              <button type="submit" disabled={!baseline.needsWeather || checking}>{checking ? 'Checking…' : 'Get testnet forecast'}</button>
+              <button type="submit" disabled={!baseline.needsWeather || checking}>{checking ? 'Checking…' : 'Get forecast'}</button>
               {!baseline.needsWeather && <p>The next batch does not need a forecast.</p>}
             </form>
           </details>

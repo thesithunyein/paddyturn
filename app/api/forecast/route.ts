@@ -1,5 +1,7 @@
 import { timingSafeEqual } from 'node:crypto'
-import { purchase } from '../../../lib/telegraph'
+import { requestAnjomanForecast } from '../../../lib/anjoman'
+
+export const maxDuration = 120
 
 export async function POST(request: Request) {
   const expected = process.env.LOCAL_FORECAST_TOKEN
@@ -15,7 +17,7 @@ export async function POST(request: Request) {
       return Response.json({ reason: 'Check the coordinates and drying-window settings.' }, { status: 400 })
     }
     const start = Math.floor(Date.now() / 3600000) * 3600000
-    const forecast = await purchase(latitude, longitude, start, hours, threshold)
+    const forecast = await requestAnjomanForecast(latitude, longitude, start, hours, threshold)
     return Response.json({ ...forecast, windowStart: start, threshold, validUntil: start + hours * 3_600_000 })
   } catch (error) {
     const reason = error instanceof Error ? error.message : 'Forecast request failed.'

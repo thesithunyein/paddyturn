@@ -47,9 +47,9 @@ flowchart TB
         Rules --> UI
     end
     subgraph Forecast["Protected forecast service"]
-        Probe["CLI probe or workspace forecast check"] --> Client["x402 client with a payment cap"]
-        Client -->|Sepolia request| Telegraph["Telegraph"]
-        Telegraph -->|Forecast and receipt when available| Client
+        Probe["Workspace forecast check"] --> Client["Anjoman API client with a spend cap"]
+        Client -->|Escrow-funded request| Telegraph["Telegraph"]
+        Telegraph -->|Forecast sources, job ID and cost| Client
     end
     UI -->|Weather-dependent decision| Probe
 ```
@@ -70,7 +70,7 @@ Open [localhost:3000](http://127.0.0.1:3000/app). Run `npm run build` to verify 
 
 For provider discovery, run `npm run probe`. Run `npm run probe -- --quote` to verify the Pathein request and inspect the Sepolia quote without signing or paying. The amount is in millionths of test USDC. For a paid testnet forecast, copy [the environment template](.env.example) to `.env.local`, configure a dedicated Sepolia wallet funded with test USDC, then run `npm run probe -- --buy`. The probe reports the receipt when available. [Telegraph x402 documentation](https://anjoman.ai/docs/using/x402-inference)
 
-For the workspace forecast, also configure `LOCAL_FORECAST_TOKEN` and enter it in **Optional forecast check**. Only an authorized operator can request a purchase. History saves the forecast and receipt when a paid forecast informs an assignment. Records stay in the current browser.
+For the workspace forecast, configure server-side `TELEGRAPH_API_KEY` and `LOCAL_FORECAST_TOKEN`. Check your Anjoman account has available testnet escrow. Open **Optional forecast check** and enter the workspace access code. The server sends only forecast inputs, with a 0.03 USDC maximum per request. History saves the job ID and cost when the forecast informs an assignment. [Anjoman API setup](https://anjoman.ai/docs/using/api-keys)
 
 ## Verification
 
@@ -81,10 +81,10 @@ For the workspace forecast, also configure `LOCAL_FORECAST_TOKEN` and enter it i
 ## Reviewer walkthrough
 
 1. Open the workspace and add two test batches. Give the first a higher moisture reading and allow it to dry outdoors. Keep the second indoors.
-2. Use **Wettest first** and **Not sure**. The workspace should ask for weather. Open **Optional forecast check**, enter the access code privately, and run a Sepolia forecast for the mill location.
-3. Check the precipitation, threshold, provider, cost, and receipt. If the forecast is usable, confirm the recommended batch. Reload, open **History**, and expand **View evidence**.
-4. For a failure case, use a deliberately invalid access code on a weather-dependent queue. The app should ask for operator review and show no paid receipt.
-5. Save the real receipt and settlement link for the submission. Label the queue as test data unless supplied by an operator. The quote alone does not prove settlement.
+2. Use **Wettest first** and **Not sure**. The workspace should ask for weather. Open **Optional forecast check**, enter the access code privately, and run an Anjoman forecast for the mill location.
+3. Check the precipitation, threshold, job ID and cost. If the forecast is usable, confirm the recommended batch. Reload, open **History**, and expand **View evidence**.
+4. For a failure case, use a deliberately invalid access code on a weather-dependent queue. The app should ask for operator review and show no paid job evidence.
+5. Save the real job ID and cost for the submission. Label the queue as test data unless supplied by an operator. The quote alone does not prove settlement.
 
 ## Project policies
 
