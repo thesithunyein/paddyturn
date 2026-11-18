@@ -1,4 +1,4 @@
-import { intent, node, purchase } from '../lib/telegraph.ts'
+import { intent, node, purchase, quoteForecast } from '../lib/telegraph.ts'
 
 const latitude = 16.78
 const longitude = 94.73
@@ -8,6 +8,8 @@ try {
     const result = await purchase(latitude, longitude, start, 3, 0.2)
     console.log(JSON.stringify(result, null, 2))
     if (result.weather === 'unknown') process.exitCode = 1
+  } else if (process.argv.includes('--quote')) {
+    console.log(JSON.stringify(await quoteForecast(latitude, longitude, 3), null, 2))
   } else {
     const response = await fetch(node + '/api/miners?intent=' + encodeURIComponent(intent) + '&limit=5', {
       signal: AbortSignal.timeout(12000),
