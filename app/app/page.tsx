@@ -133,7 +133,7 @@ export default function Dashboard() {
       <span><strong>{assigned}</strong> assigned to the dryer.</span>
       <button onClick={() => setTab('history')}>View history</button>
     </div>}
-    <div className="grid">
+    <div className={batches.length && tab === 'queue' ? 'grid queue-active' : 'grid'}>
       <section className="card queue">
         <div className="tabs" aria-label="Workspace view">
           <button aria-pressed={tab === 'queue'} onClick={() => setTab('queue')}>Queue <span>{batches.length}</span></button>
@@ -153,13 +153,14 @@ export default function Dashboard() {
         <section className="card next" aria-live="polite">
           <img className="mill" src="/mill.svg" alt="" />
           <div className="next-copy"><h2>Next batch to dry</h2>
-            <p className="answer">{next?.id ?? (decision.review ? 'Check weather' : '—')}</p>
-            <p>{!batches.length ? 'Add a batch to start.' : decision.review ? forecast?.reason || 'Choose the weather below to see which batch goes next.' : outdoor.length ? 'Can dry outdoors: ' + outdoor.join(', ') : 'First in your queue.'}</p>
+            <p className="answer">{next?.id ?? (decision.review ? 'Check weather' : outdoor.length ? 'Dry outdoors' : '—')}</p>
+            <p>{!batches.length ? 'Add a batch to start.' : decision.review ? forecast?.reason || decision.baseline?.id + ' can dry outdoors. Check the weather before assigning it.' : outdoor.length ? 'Can dry outdoors: ' + outdoor.join(', ') : conditions === 'rain' && decision.baseline?.outdoor ? 'Rain keeps this batch in the dryer queue.' : priority === 'moisture' ? 'Highest moisture reading in the queue.' : 'First to arrive.'}</p>
             {decision.review && <a className="conditions-link" href="#outdoor-conditions">Set the weather</a>}
+            {next && <dl className="next-facts"><div><dt>Moisture</dt><dd>{next.moisture}%</dd></div><div><dt>Arrival</dt><dd>{next.arrival}</dd></div></dl>}
             {next && <button className="primary" onClick={() => record(next)}><Icon name="check" /> Assign to dryer</button>}
           </div>
         </section>
-        <section id="outdoor-conditions" className="card weather"><h2><Icon name="weather" /> Weather for outdoor drying</h2>
+        <section id="outdoor-conditions" className="card weather" tabIndex={-1}><h2><Icon name="weather" /> Weather for outdoor drying</h2>
           <div className="weather-options">{weatherOptions.map(option => <button key={option.id} disabled={!ready || checking} aria-pressed={!forecast && weather === option.id} onClick={() => {
             setForecast(undefined)
             save({ ...workspace, weather: option.id })

@@ -44,7 +44,7 @@ export default function Landing() {
       <img src="/mill.svg" alt="" width="300" height="186" />
       <div>
         <h2 id="operation-title">One dryer. Several batches.</h2>
-        <p>Sort by moisture or arrival time. When a batch can dry outside, give the dryer to the next batch that needs it.</p>
+        <p>Sort by moisture or arrival time. In dry weather, move batches that can dry outdoors out of the way and give the dryer to the next batch that needs it.</p>
       </div>
     </section>
     <section className="landing-records" aria-labelledby="records-title">

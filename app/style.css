@@ -130,3 +130,11 @@ input, select { max-width: 100% }
   from { opacity: 0; transform: translateY(4px) }
   to { opacity: 1; transform: translateY(0) }
 }
+
+.next-facts { display: flex; flex-wrap: wrap; gap: 10px 20px; margin: 12px 0 17px }
+.next-facts dt { font-size: .74rem; color: #dae5d6 }
+.next-facts dd { margin: 2px 0 0; font-size: .94rem; font-weight: 700 }
+#outdoor-conditions { scroll-margin-top: 16px }
+@media (max-width: 760px) {
+  .queue-active .side { order: -1 }
+}
