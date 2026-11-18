@@ -8,6 +8,10 @@ const steps = [
 ]
 
 const questions = [
+  ['Do I need an account?', 'Open the workspace and add your first batch. No sign-up is required.'],
+  ['Where are my batches and history saved?', 'They stay in this browser. Use the same browser profile to see them again.'],
+  ['Can I fix a batch I entered incorrectly?', 'Use the edit button next to a waiting batch to correct its arrival time, moisture reading, or outdoor drying option.'],
+  ['Can I move between my phone and computer?', 'You can open PaddyTurn on either device. Each browser keeps its own queue and history.'],
   ['How does PaddyTurn choose the next batch?', 'It ranks the queue by moisture or arrival time. If a dry window lets the first batch go outdoors, it recommends the highest-ranked batch that needs the dryer.'],
   ['Can I use it to decide when paddy is ready for storage?', 'Use a physical moisture reading and follow your mill’s storage procedures. PaddyTurn helps you schedule the dryer.'],
 ]
