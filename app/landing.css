@@ -22,7 +22,8 @@
 .landing-steps li::marker { color: var(--green); font-weight: 700 }
 .landing-steps h3 { font-size: .96rem; margin: 0 0 5px }
 .landing-steps p, .landing-questions p { color: var(--muted); font-size: .88rem; line-height: 1.6; margin: 0 }
-.landing-faq { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 15px 40px; margin-top: 15px }
+.landing-faq { max-width: 640px; margin: 10px auto 0; padding-top: 24px }
+.landing-faq h2 { margin-bottom: 10px }
 .landing-questions details + details { border-top: 1px solid var(--landing-rule) }
 .landing-questions summary {
   display: flex;
@@ -57,10 +58,10 @@
 .landing-questions details[open] summary span::after { transform: rotate(0) }
 .landing-questions summary:hover { color: var(--green) }
 .landing-questions p { padding: 0 0 13px }
-.landing-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; padding: 21px 0 0; margin-top: 22px; border-top: 0 }
+.landing-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; padding: 21px 0 0; margin-top: 12px; border-top: 1px solid var(--landing-rule) }
 .landing-footer .landing-links a { color: var(--muted); }
 @media (max-width: 760px) {
-  .landing-hero, .landing-steps ol, .landing-faq { grid-template-columns: 1fr }
+  .landing-hero, .landing-steps ol { grid-template-columns: 1fr }
   .landing-hero { gap: 24px }
   .landing-steps ol { gap: 14px }
 }
@@ -69,43 +70,8 @@
   .landing-action:is(:hover, :focus-visible) svg { transform: translateX(3px) }
 }
 
-.landing-operation {
-  display: grid;
-  grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
-  align-items: center;
-  gap: clamp(20px, 5vw, 64px);
-  border: 1px solid #dce2d2;
-  border-radius: 16px;
-  background: #eef1e5;
-  overflow: hidden;
-}
-.landing-operation img { display: block; width: 100%; height: auto }
-.landing-operation > div { padding: 24px 28px 24px 0 }
-.landing-operation h2 { font-family: var(--display); font-size: clamp(1.45rem, 3vw, 2rem); font-weight: 560 }
-.landing-operation p, .landing-records p { color: var(--muted); font-size: .9rem; line-height: 1.6; margin: 8px 0 0; max-width: 53ch }
-.landing-records { display: flex; align-items: flex-start; gap: 14px; padding: 18px; margin: 16px 0 25px; background: #fffdf7; border: 1px solid var(--landing-rule); border-radius: 12px }
-.landing-records svg { color: var(--green); flex: 0 0 auto }
-@media (max-width: 600px) {
-  .landing-operation { grid-template-columns: 1fr; gap: 0 }
-  .landing-operation img { width: min(100%, 320px) }
-  .landing-operation > div { padding: 18px }
-}
-
 .landing-footer .landing-links a:is(:hover, :active) { color: var(--green) }
 
-
-.landing-start {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 16px 24px;
-  background: #e9eddf;
-  border: 1px solid #dce2d2;
-  border-radius: 14px;
-  padding: clamp(18px, 3vw, 28px);
-}
-.landing-start h2 { font-family: var(--display); font-weight: 560; font-size: clamp(1.35rem, 3vw, 1.8rem) }
 
 @media (prefers-reduced-motion: no-preference) {
   .landing-copy > * { animation: product-arrive 640ms cubic-bezier(.2,.75,.26,1) both }
@@ -117,13 +83,7 @@
   .landing-action:active { transform: translateY(0) }
   .landing-questions details[open] > p { animation: product-arrive 220ms ease-out both }
   .landing-questions summary span::after { transition: transform 180ms ease }
-  @supports (animation-timeline: view()) {
-    .landing-operation, .landing-records, .landing-start {
-      animation: section-arrive linear both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 70%;
-    }
-  }
+
 }
 @keyframes product-arrive {
   from { opacity: 0; transform: translateY(12px) }
@@ -133,11 +93,6 @@
   from { opacity: 0; transform: translateY(14px) scale(.98) }
   to { opacity: 1; transform: translateY(0) scale(1) }
 }
-@keyframes section-arrive {
-  from { transform: translateY(14px) }
-  to { transform: translateY(0) }
-}
-
 .landing-progress { display: none }
 @media (prefers-reduced-motion: no-preference) {
   .landing-questions details::details-content {

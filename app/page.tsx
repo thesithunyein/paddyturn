@@ -4,7 +4,7 @@ import './landing.css'
 const steps = [
   ['Add your batches', 'Enter when each batch arrived, its moisture reading, and whether it can dry outside.'],
   ['Check the weather', 'Tell PaddyTurn whether you expect dry weather or rain.'],
-  ['Choose the next batch', 'Confirm the batch going into the dryer. You’ll find it in History.'],
+  ['Choose the next batch', 'Assign a batch to the dryer. History saves the batch and time in this browser.'],
 ]
 
 const questions = [
@@ -43,34 +43,14 @@ export default function Landing() {
       <h2>How it works</h2>
       <ol>{steps.map(([title, description]) => <li key={title}><h3>{title}</h3><p>{description}</p></li>)}</ol>
     </section>
-    <section className="landing-operation" aria-labelledby="operation-title">
-      <img src="/mill.svg" alt="" width="300" height="186" />
-      <div>
-        <h2 id="operation-title">One dryer. Several batches.</h2>
-        <p>Sort by moisture or arrival time. In dry weather, give the dryer to the next batch that needs it.</p>
-      </div>
-    </section>
-    <section className="landing-records" aria-labelledby="records-title">
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="M6 4h12a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Zm3 5h6m-6 4h6m-6 4h4" />
-      </svg>
-      <div>
-        <h2 id="records-title">Every dryer turn has a record</h2>
-        <p>Find the batch ID, moisture reading, and assignment time in History. Your records stay in this browser.</p>
-      </div>
-    </section>
     <section id="faq" className="landing-faq" aria-labelledby="faq-title">
-      <h2 id="faq-title">Frequently asked questions</h2>
+      <h2 id="faq-title">FAQ</h2>
       <div className="landing-questions">
         {questions.map(([question, answer]) => <details key={question}>
           <summary>{question}<span aria-hidden="true" /></summary>
           <p>{answer}</p>
         </details>)}
       </div>
-    </section>
-    <section className="landing-start" aria-labelledby="start-title">
-      <h2 id="start-title">Ready to plan the next turn?</h2>
-      <OpenWorkspace />
     </section>
     <footer className="landing-footer">
       <Link href="/" className="brand home-link"><img src="/paddyturn.svg" alt="" width="32" height="32" /><strong>PaddyTurn</strong></Link>
