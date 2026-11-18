@@ -30,3 +30,30 @@
   .landing-hero, .landing-steps ol { grid-template-columns: 1fr }
   .landing-steps ol { gap: 14px }
 }
+
+.landing-links { display: flex; align-items: center; flex-wrap: wrap; gap: 12px 20px }
+.landing-faq { display: grid; grid-template-columns: minmax(0, .75fr) minmax(0, 1.25fr); gap: 24px 50px; margin-top: 58px; border-top: 1px solid var(--line); padding: 30px 0 46px }
+.landing-faq h2 { font-family: Georgia, serif; font-size: clamp(1.75rem, 3.4vw, 2.75rem); font-weight: 500; line-height: 1.1 }
+.landing-questions details { border-bottom: 1px solid var(--line) }
+.landing-questions summary { display: flex; justify-content: space-between; align-items: center; gap: 12px; cursor: pointer; padding: 14px 0; font-size: .92rem; font-weight: 650; list-style: none }
+.landing-questions summary::-webkit-details-marker { display: none }
+.landing-questions summary span { flex: 0 0 18px; aspect-ratio: 1; position: relative; color: var(--green) }
+.landing-questions summary span::before, .landing-questions summary span::after { content: ''; position: absolute; inset: 8px 2px; background: currentColor }
+.landing-questions summary span::after { transform: rotate(90deg) }
+.landing-questions details[open] summary span::after { transform: rotate(0deg) }
+.landing-questions p { color: var(--muted); line-height: 1.6; margin: 0 25px 14px 0; font-size: .9rem }
+.landing-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; padding: 19px 0 0 }
+.landing-footer .landing-links a { color: var(--muted); text-underline-offset: 3px }
+@media (max-width: 760px) {
+  .landing-faq { grid-template-columns: 1fr; gap: 14px; margin-top: 42px }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .landing-copy, .landing-preview { animation: landing-enter .55s ease-out both }
+  .landing-preview { animation-delay: .1s }
+  .landing-action svg, .landing-questions summary span::after { transition: transform .18s ease }
+  .landing-action:is(:hover, :focus-visible) svg { transform: translateX(3px) }
+}
+@keyframes landing-enter {
+  from { opacity: 0; transform: translateY(9px) }
+  to { opacity: 1; transform: translateY(0) }
+}
