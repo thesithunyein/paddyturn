@@ -43,8 +43,8 @@ export default function Landing() {
     <section className="landing-operation" aria-labelledby="operation-title">
       <img src="/mill.svg" alt="" width="300" height="186" />
       <div>
-        <h2 id="operation-title">When several batches need one dryer</h2>
-        <p>Give the first turn to the wettest batch or the one that arrived first. If that batch can dry outdoors and the weather is clear, PaddyTurn suggests the next batch that needs the dryer.</p>
+        <h2 id="operation-title">One dryer. Several batches.</h2>
+        <p>Sort by moisture or arrival time. When a batch can dry outside, give the dryer to the next batch that needs it.</p>
       </div>
     </section>
     <section className="landing-records" aria-labelledby="records-title">
@@ -52,8 +52,8 @@ export default function Landing() {
         <path d="M6 4h12a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Zm3 5h6m-6 4h6m-6 4h4" />
       </svg>
       <div>
-        <h2 id="records-title">Check what went into the dryer</h2>
-        <p>History shows each assigned batch, its moisture reading, and when it was assigned. Your queue and history are saved in this browser.</p>
+        <h2 id="records-title">Every dryer turn has a record</h2>
+        <p>Find the batch ID, moisture reading, and assignment time in History. Your records stay in this browser.</p>
       </div>
     </section>
     <section id="faq" className="landing-faq" aria-labelledby="faq-title">
@@ -64,6 +64,10 @@ export default function Landing() {
           <p>{answer}</p>
         </details>)}
       </div>
+    </section>
+    <section className="landing-start" aria-labelledby="start-title">
+      <h2 id="start-title">Ready to plan the next turn?</h2>
+      <OpenWorkspace />
     </section>
     <footer className="landing-footer">
       <Link href="/" className="brand home-link"><img src="/paddyturn.svg" alt="" width="32" height="32" /><strong>PaddyTurn</strong></Link>
