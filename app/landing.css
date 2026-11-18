@@ -37,3 +37,25 @@
   .landing-action svg { transition: transform .18s ease }
   .landing-action:is(:hover, :focus-visible) svg { transform: translateX(3px) }
 }
+
+.landing-operation {
+  display: grid;
+  grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
+  align-items: center;
+  gap: clamp(20px, 5vw, 64px);
+  border: 1px solid #dce2d2;
+  border-radius: 16px;
+  background: #eef1e5;
+  overflow: hidden;
+}
+.landing-operation img { display: block; width: 100%; height: auto }
+.landing-operation > div { padding: 24px 28px 24px 0 }
+.landing-operation h2 { font-family: var(--display); font-size: clamp(1.45rem, 3vw, 2rem); font-weight: 560 }
+.landing-operation p, .landing-records p { color: var(--muted); font-size: .9rem; line-height: 1.6; margin: 8px 0 0; max-width: 53ch }
+.landing-records { display: flex; align-items: flex-start; gap: 14px; padding: 27px 0 13px }
+.landing-records svg { color: var(--green); flex: 0 0 auto }
+@media (max-width: 600px) {
+  .landing-operation { grid-template-columns: 1fr; gap: 0 }
+  .landing-operation img { width: min(100%, 320px) }
+  .landing-operation > div { padding: 18px }
+}

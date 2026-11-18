@@ -10,7 +10,6 @@ const steps = [
 const questions = [
   ['How does PaddyTurn choose the next batch?', 'It ranks the queue by moisture or arrival time. If a dry window lets the first batch go outdoors, it recommends the highest-ranked batch that needs the dryer.'],
   ['What if the weather is uncertain?', 'PaddyTurn asks you to review conditions when they could change the dryer assignment. You confirm the final decision.'],
-  ['Where are my batches saved?', 'Your queue and assignment history stay in this browser. Open PaddyTurn in the same browser profile to pick up where you left off.'],
   ['Can I use it to decide when paddy is ready for storage?', 'Use a physical moisture reading and follow your mill’s storage procedures. PaddyTurn helps you schedule the dryer.'],
 ]
 
@@ -40,6 +39,22 @@ export default function Landing() {
     <section id="how-it-works" className="landing-steps">
       <h2>How it works</h2>
       <ol>{steps.map(([title, description]) => <li key={title}><h3>{title}</h3><p>{description}</p></li>)}</ol>
+    </section>
+    <section className="landing-operation" aria-labelledby="operation-title">
+      <img src="/mill.svg" alt="" width="300" height="186" />
+      <div>
+        <h2 id="operation-title">When several batches need one dryer</h2>
+        <p>Give the first turn to the wettest batch or the one that arrived first. If that batch can dry outdoors and the weather is clear, PaddyTurn suggests the next batch that needs the dryer.</p>
+      </div>
+    </section>
+    <section className="landing-records" aria-labelledby="records-title">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M6 4h12a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Zm3 5h6m-6 4h6m-6 4h4" />
+      </svg>
+      <div>
+        <h2 id="records-title">Check what went into the dryer</h2>
+        <p>History shows each assigned batch, its moisture reading, and when it was assigned. Your queue and history are saved in this browser.</p>
+      </div>
     </section>
     <section id="faq" className="landing-faq" aria-labelledby="faq-title">
       <h2 id="faq-title">Frequently asked questions</h2>
