@@ -135,3 +135,22 @@
   box-shadow: 0 15px 32px -24px #244c3780;
 }
 .drying-floor-frame .drying-floor { border: 0; border-radius: 9px }
+
+.landing-weather {
+  display: grid;
+  grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
+  gap: 14px 34px;
+  border-top: 1px solid var(--landing-rule);
+  padding: 24px 0;
+}
+.landing-weather h2 { font-family: var(--display); font-size: clamp(1.45rem, 3vw, 2rem); font-weight: 560 }
+.landing-weather dl { margin: 0 }
+.landing-weather dl > div { display: grid; grid-template-columns: minmax(96px, .34fr) 1fr; gap: 8px 16px; padding: 8px 0 }
+.landing-weather dt { font-size: .88rem; font-weight: 700; color: var(--green) }
+.landing-weather dd { margin: 0; color: var(--muted); font-size: .88rem; line-height: 1.55 }
+@media (max-width: 760px) {
+  .landing-weather { grid-template-columns: 1fr }
+}
+@media (max-width: 420px) {
+  .landing-weather dl > div { grid-template-columns: 1fr; gap: 3px }
+}

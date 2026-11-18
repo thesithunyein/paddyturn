@@ -9,7 +9,6 @@ const steps = [
 
 const questions = [
   ['How does PaddyTurn choose the next batch?', 'It ranks the queue by moisture or arrival time. If a dry window lets the first batch go outdoors, it recommends the highest-ranked batch that needs the dryer.'],
-  ['What if the weather is uncertain?', 'PaddyTurn asks you to review conditions when they could change the dryer assignment. You confirm the final decision.'],
   ['Can I use it to decide when paddy is ready for storage?', 'Use a physical moisture reading and follow your mill’s storage procedures. PaddyTurn helps you schedule the dryer.'],
 ]
 
@@ -42,6 +41,14 @@ export default function Landing() {
     <section id="how-it-works" className="landing-steps">
       <h2>How it works</h2>
       <ol>{steps.map(([title, description]) => <li key={title}><h3>{title}</h3><p>{description}</p></li>)}</ol>
+    </section>
+    <section className="landing-weather" aria-labelledby="weather-title">
+      <h2 id="weather-title">When the weather changes</h2>
+      <dl>
+        <div><dt>Dry weather</dt><dd>A batch that can dry outside can free up the dryer for another batch.</dd></div>
+        <div><dt>Rain likely</dt><dd>Keep the batch at the front of the queue for the dryer.</dd></div>
+        <div><dt>Not sure</dt><dd>Review the conditions before making a weather-dependent assignment.</dd></div>
+      </dl>
     </section>
     <section id="faq" className="landing-faq" aria-labelledby="faq-title">
       <h2 id="faq-title">FAQ</h2>
