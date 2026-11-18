@@ -1,119 +1,39 @@
-.landing-nav { color: inherit; text-decoration: none }
-.landing-nav { color: var(--muted); font-size: .9rem }
+.landing { --landing-rule: #dedfd3 }
+.landing .top { padding: 17px 0; border-color: var(--landing-rule) }
+.landing-links { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 22px }
+.landing-nav { color: var(--muted); text-decoration: none; font-size: .875rem }
 .landing-nav:hover { text-decoration: underline }
 .landing-hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr);
+  grid-template-columns: minmax(0, .88fr) minmax(0, 1.12fr);
   align-items: center;
-  gap: clamp(32px, 7vw, 88px);
-  padding: clamp(46px, 9vw, 104px) 0;
+  gap: clamp(32px, 5.5vw, 76px);
+  padding: clamp(36px, 6vw, 76px) 0;
 }
-.landing-hero h1 { font-size: clamp(3rem, 6.3vw, 5.65rem) }
-.landing-copy > p:not(.kicker) { max-width: 420px; color: var(--muted); line-height: 1.65; margin: 21px 0 25px }
-.landing-action { padding: 11px 16px; border-radius: 9px; text-decoration: none; font-size: .9rem; font-weight: 650; width: fit-content }
+.landing-hero h1 { max-width: 13ch; font-size: clamp(2.7rem, 5.2vw, 4.7rem); line-height: 1.04; text-wrap: balance }
+.landing-copy p { max-width: 32ch; color: var(--muted); line-height: 1.65; margin: 18px 0 22px }
+.landing-action { min-height: 44px; padding: 10px 15px; border-radius: 8px; text-decoration: none; font-size: .9rem; font-weight: 700 }
 .landing-action:hover { background: #1d402e }
-.landing-preview { margin: 0; background: #fff; border: 1px solid var(--line); border-radius: 21px; overflow: hidden; box-shadow: 0 14px 45px #2236270d }
-.preview-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 21px }
-.preview-header span { font-size: .75rem; color: var(--muted) }
-.preview-next { position: relative; min-height: 142px; margin: 14px; background: #eaf0e2; border-radius: 13px; overflow: hidden }
-.preview-next img { position: absolute; width: 50%; max-width: 230px; bottom: 0; right: 0 }
-.preview-next div { position: relative; display: grid; gap: 7px; padding: 18px }
-.preview-next span, .preview-next small { color: #435a4a; font-size: .83rem }
-.preview-next strong { font: 2rem Georgia, serif }
-.landing-steps { border-top: 1px solid var(--line); padding-top: 24px }
-.landing-steps h2 { font-size: 1.25rem }
-.landing-steps ol { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; padding-left: 20px; margin: 18px 0 0 }
+.drying-floor { display: block; width: 100%; height: auto; border-radius: 16px; border: 1px solid #dce2d2 }
+.landing-steps, .landing-faq { border-top: 1px solid var(--landing-rule); padding: 28px 0 }
+.landing-steps h2, .landing-faq h2 { font-family: var(--display); font-size: clamp(1.45rem, 3vw, 2rem); font-weight: 560 }
+.landing-steps ol { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 26px; padding-left: 20px; margin: 17px 0 0 }
 .landing-steps li { padding-left: 4px }
-.landing-steps h3 { font-size: .98rem; margin: 0 0 5px }
-.landing-steps p { color: var(--muted); font-size: .88rem; line-height: 1.55; margin: 0 }
-@media (max-width: 760px) {
-  .landing-hero, .landing-steps ol { grid-template-columns: 1fr }
-  .landing-steps ol { gap: 14px }
-}
-
-.landing-links { display: flex; align-items: center; flex-wrap: wrap; gap: 12px 20px }
-.landing-faq { display: grid; grid-template-columns: minmax(0, .75fr) minmax(0, 1.25fr); gap: 24px 50px; margin-top: 58px; border-top: 1px solid var(--line); padding: 30px 0 46px }
-.landing-faq h2 { font-family: Georgia, serif; font-size: clamp(1.75rem, 3.4vw, 2.75rem); font-weight: 500; line-height: 1.1 }
-.landing-questions details { border-bottom: 1px solid var(--line) }
-.landing-questions summary { display: flex; justify-content: space-between; align-items: center; gap: 12px; cursor: pointer; padding: 14px 0; font-size: .92rem; font-weight: 650; list-style: none }
-.landing-questions summary::-webkit-details-marker { display: none }
-.landing-questions summary span { flex: 0 0 18px; aspect-ratio: 1; position: relative; color: var(--green) }
-.landing-questions summary span::before, .landing-questions summary span::after { content: ''; position: absolute; inset: 8px 2px; background: currentColor }
-.landing-questions summary span::after { transform: rotate(90deg) }
-.landing-questions details[open] summary span::after { transform: rotate(0deg) }
-.landing-questions p { color: var(--muted); line-height: 1.6; margin: 0 25px 14px 0; font-size: .9rem }
+.landing-steps li::marker { color: var(--green); font-weight: 700 }
+.landing-steps h3 { font-size: .96rem; margin: 0 0 5px }
+.landing-steps p, .landing-questions p { color: var(--muted); font-size: .88rem; line-height: 1.6; margin: 0 }
+.landing-faq { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 15px 40px; margin-top: 15px }
+.landing-questions details + details { border-top: 1px solid var(--landing-rule) }
+.landing-questions summary { cursor: pointer; padding: 12px 0; font-size: .92rem; font-weight: 650 }
+.landing-questions p { padding: 0 0 13px }
 .landing-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; padding: 19px 0 0 }
 .landing-footer .landing-links a { color: var(--muted); text-underline-offset: 3px }
 @media (max-width: 760px) {
-  .landing-faq { grid-template-columns: 1fr; gap: 14px; margin-top: 42px }
+  .landing-hero, .landing-steps ol, .landing-faq { grid-template-columns: 1fr }
+  .landing-hero { gap: 24px }
+  .landing-steps ol { gap: 14px }
 }
 @media (prefers-reduced-motion: no-preference) {
-  .landing-copy, .landing-preview { animation: landing-enter .55s ease-out both }
-  .landing-preview { animation-delay: .1s }
-  .landing-action svg, .landing-questions summary span::after { transition: transform .18s ease }
+  .landing-action svg { transition: transform .18s ease }
   .landing-action:is(:hover, :focus-visible) svg { transform: translateX(3px) }
 }
-@keyframes landing-enter {
-  from { opacity: 0; transform: translateY(9px) }
-  to { opacity: 1; transform: translateY(0) }
-}
-
-.landing-preview { background: #fffdf7 }
-.preview-next { background: var(--green); color: var(--grain) }
-.preview-next span, .preview-next small { color: #e3eadb }
-.landing-steps li::marker { color: var(--green); font-weight: 700 }
-
-.landing-hero h1 { max-width: 11ch; line-height: .99 }
-.landing-faq h2, .preview-next strong { font-family: var(--display); font-optical-sizing: auto }
-.landing-preview { box-shadow: 0 1px 2px #3c39200a, 0 24px 55px -32px #244c3766 }
-.preview-next { min-height: 155px }
-.preview-next > div:last-child { max-width: 65% }
-.preview-next .grain-scene {
-  position: absolute;
-  inset: 0 4% 0 auto;
-  width: 43%;
-  max-width: 160px;
-  display: grid;
-  place-items: center;
-  padding: 0;
-  perspective: 550px;
-  pointer-events: none;
-}
-.preview-next .grain-medallion {
-  position: relative;
-  display: block;
-  width: 73%;
-  max-width: 104px;
-  aspect-ratio: 1;
-  padding: 0;
-  transform-style: preserve-3d;
-  transform: rotateX(12deg) rotateY(-27deg) rotateZ(-10deg);
-}
-.grain-medallion span {
-  position: absolute;
-  inset: 0;
-  border-radius: 26%;
-}
-.grain-medallion .grain-back { background: #a98338; transform: translateZ(-8px) }
-.grain-medallion .grain-rim { background: #cfab59; transform: translateZ(-3px) }
-.grain-medallion .grain-face {
-  background: #f7e5ad;
-  border: 1px solid #fff0c8;
-  box-shadow: inset 0 0 0 4px #dcbc73;
-  display: grid;
-  place-items: center;
-  transform: translateZ(2px);
-}
-.grain-medallion .grain-face img { position: static; width: 63%; max-width: none }
-@media (prefers-reduced-motion: no-preference) {
-  .grain-medallion { animation: grain-turn 6s ease-in-out 2 }
-}
-@keyframes grain-turn {
-  0%, 100% { transform: rotateX(12deg) rotateY(-27deg) rotateZ(-10deg) }
-  50% { transform: translateY(-7px) rotateX(3deg) rotateY(20deg) rotateZ(-3deg) }
-}
-
-.preview-weather { display: flex; flex-wrap: wrap; gap: 8px; padding: 14px 14px 0 }
-.preview-weather button { min-height: 44px }
-.preview-weather button[aria-pressed=true] { background: #e7ede1; border-color: #c9d8c6; color: var(--green) }
-.preview-open { display: inline-block; margin: 0 14px 14px; padding: 6px 0; color: var(--green); font-size: .86rem; font-weight: 700; text-underline-offset: 3px }
