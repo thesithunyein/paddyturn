@@ -154,3 +154,48 @@
 @media (max-width: 420px) {
   .landing-weather dl > div { grid-template-columns: 1fr; gap: 3px }
 }
+
+.landing-weather {
+  align-items: center;
+  margin-block: clamp(20px, 4vw, 52px);
+  padding-block: clamp(26px, 4vw, 52px);
+  column-gap: clamp(26px, 6vw, 80px);
+}
+.landing-weather dl > div { padding-block: 13px }
+.landing-weather dl > div + div { border-top: 1px solid var(--landing-rule) }
+.weather-intro { display: grid; gap: 18px }
+.weather-scene { perspective: 420px; padding: 4px 10px 12px }
+.weather-object {
+  position: relative;
+  width: 78px;
+  height: 78px;
+  transform-style: preserve-3d;
+  transform: rotateX(10deg) rotateY(-18deg);
+}
+.weather-face, .weather-depth { position: absolute; inset: 0; border-radius: 21px }
+.weather-depth { background: #a8bd9c; transform: translate3d(2px, 3px, -7px) }
+.weather-face {
+  display: grid;
+  place-items: center;
+  background: #e6eddd;
+  border: 1px solid #bfceb6;
+  box-shadow: 0 10px 20px -14px #244c3780;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .weather-object { transition: transform 450ms cubic-bezier(.2,.75,.25,1) }
+  .landing-weather:hover .weather-object { transform: translateY(-3px) rotateX(-7deg) rotateY(17deg) }
+  @supports (animation-timeline: view()) {
+    .weather-object { animation: weather-tilt linear both; animation-timeline: view(); animation-range: entry 0% entry 100% }
+    .landing-weather:hover .weather-object { animation: none }
+  }
+}
+@keyframes weather-tilt {
+  from { transform: translateY(10px) rotateX(24deg) rotateY(-34deg) }
+  to { transform: translateY(0) rotateX(10deg) rotateY(-18deg) }
+}
+@media (max-width: 760px) {
+  .weather-intro { grid-template-columns: 1fr auto; align-items: center }
+  .weather-scene { padding: 0 5px 4px }
+  .weather-object { width: 58px; height: 58px }
+  .weather-face svg { width: 34px; height: 34px }
+}
