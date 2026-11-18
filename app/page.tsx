@@ -28,6 +28,7 @@ export default function Landing() {
         <a className="landing-nav" href="#faq">FAQ</a>
       </nav>
     </header>
+    <div className="landing-progress" aria-hidden="true" />
     <section className="landing-hero">
       <div className="landing-copy">
         <h1>Know what to dry next.</h1>
@@ -44,7 +45,7 @@ export default function Landing() {
       <img src="/mill.svg" alt="" width="300" height="186" />
       <div>
         <h2 id="operation-title">One dryer. Several batches.</h2>
-        <p>Sort by moisture or arrival time. In dry weather, move batches that can dry outdoors out of the way and give the dryer to the next batch that needs it.</p>
+        <p>Sort by moisture or arrival time. In dry weather, give the dryer to the next batch that needs it.</p>
       </div>
     </section>
     <section className="landing-records" aria-labelledby="records-title">

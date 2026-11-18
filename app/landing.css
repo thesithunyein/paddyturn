@@ -137,3 +137,28 @@
   from { transform: translateY(14px) }
   to { transform: translateY(0) }
 }
+
+.landing-progress { display: none }
+@media (prefers-reduced-motion: no-preference) {
+  .landing-questions details::details-content {
+    transition: opacity .22s ease, content-visibility .22s allow-discrete;
+    opacity: 0;
+  }
+  .landing-questions details[open]::details-content { opacity: 1 }
+  @supports (animation-timeline: scroll()) {
+    .landing-progress {
+      display: block;
+      position: fixed;
+      z-index: 2;
+      inset: 0 0 auto;
+      height: 3px;
+      background: #aa7c38;
+      transform: scaleX(0);
+      transform-origin: left;
+      animation: reading-progress linear both;
+      animation-timeline: scroll(root block);
+      pointer-events: none;
+    }
+  }
+}
+@keyframes reading-progress { to { transform: scaleX(1) } }

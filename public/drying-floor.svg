@@ -1,4 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 430">
+  <style>
+    @media (prefers-reduced-motion: no-preference) {
+      .sun { animation: sunrise 1.1s cubic-bezier(.22,1,.36,1) both }
+      .grain-bed { animation: settle .95s cubic-bezier(.22,1,.36,1) both }
+      .grain-bed-late { animation-delay: .14s }
+    }
+    @keyframes sunrise { from { opacity: .25; transform: translateY(16px) } to { opacity: 1; transform: translateY(0) } }
+    @keyframes settle { from { opacity: .25; transform: translateY(9px) } to { opacity: 1; transform: translateY(0) } }
+  </style>
   <defs>
     <pattern id="grain" width="14" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(-24)">
       <path d="M2 4h5m4 5h3" stroke="#bd8e42" stroke-width="1.1" stroke-linecap="round" opacity=".6"/>
@@ -9,13 +18,17 @@
   </defs>
   <rect width="620" height="430" fill="#e9eddf"/>
   <rect width="620" height="430" fill="url(#grid)"/>
-  <circle cx="473" cy="100" r="42" fill="#f4df9e"/>
+  <circle class="sun" cx="473" cy="100" r="42" fill="#f4df9e"/>
   <path d="M31 298 328 156l264 117-296 135Z" fill="#d9e2ce"/>
   <path d="m82 296 231-111 227 95-228 108Z" fill="#c0ceb6"/>
+  <g class="grain-bed">
   <path d="m112 278 133-63 111 48-132 63Z" fill="#f0d694" stroke="#9c7436" stroke-width="1.5" stroke-linejoin="round"/>
   <path d="m112 278 133-63 111 48-132 63Z" fill="url(#grain)"/>
+  </g>
+  <g class="grain-bed grain-bed-late">
   <path d="m235 331 132-63 84 36-132 63Z" fill="#e7c274" stroke="#9c7436" stroke-width="1.5" stroke-linejoin="round"/>
   <path d="m235 331 132-63 84 36-132 63Z" fill="url(#grain)"/>
+  </g>
   <g stroke="#31533b" stroke-width="2" stroke-linejoin="round">
     <path d="m298 149 104-50 113 51-103 48Z" fill="#54775d"/>
     <path d="m298 149 114 49v79l-114-48Z" fill="#fcf5dc"/>
