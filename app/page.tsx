@@ -44,7 +44,13 @@ export default function Landing() {
           <tbody><tr><th scope="row">PT-024</th><td>07:30</td><td>25%</td></tr><tr><th scope="row">PT-025</th><td>07:45</td><td>23%</td></tr></tbody>
         </table>
         <div className="preview-next">
-          <img src="/mill.svg" alt="" />
+          <div className="grain-scene" aria-hidden="true">
+            <div className="grain-medallion">
+              <span className="grain-back" />
+              <span className="grain-rim" />
+              <span className="grain-face"><img src="/paddyturn.svg" alt="" /></span>
+            </div>
+          </div>
           <div><span>Next dryer turn</span><strong>PT-024</strong><small>Rain expected</small></div>
         </div>
       </figure>
