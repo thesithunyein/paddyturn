@@ -34,7 +34,7 @@ export async function purchase(latitude: number, longitude: number, start: numbe
   const rawReceipt = response.headers.get('x-telegraph-receipt')
   if (!rawReceipt || !answer.signal_hash) throw new Error('Telegraph did not return verifiable purchase evidence.')
   const receipt = JSON.parse(Buffer.from(rawReceipt, 'base64').toString('utf8'))
-  const evidence = { provider: answer.miner_name, cost: answer.cost_usd,
+  const evidence = { intent, miner, provider: answer.miner_name, cost: answer.cost_usd,
     signalHash: answer.signal_hash, receiptHash: receipt.receipt_hash, transaction: receipt.tx_hash }
   try {
     if (answer.error || answer.result?.error || Object.values(answer.field_status || {}).some(status => status !== 'ok')) {

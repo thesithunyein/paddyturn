@@ -148,3 +148,6 @@ input, select { max-width: 100% }
   from { opacity: .5; transform: translateY(5px) }
   to { opacity: 1; transform: translateY(0) }
 }
+
+.history-forecast summary { cursor: pointer; color: var(--green); font-weight: 650 }
+.forecast-evidence { max-width: 34ch; white-space: normal; overflow-wrap: anywhere; line-height: 1.5 }

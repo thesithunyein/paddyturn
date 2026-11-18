@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     }
     const start = Math.floor(Date.now() / 3600000) * 3600000
     const forecast = await purchase(latitude, longitude, start, hours, threshold)
-    return Response.json({ ...forecast, validUntil: start + hours * 3_600_000 })
+    return Response.json({ ...forecast, windowStart: start, threshold, validUntil: start + hours * 3_600_000 })
   } catch (error) {
     const reason = error instanceof Error ? error.message : 'Forecast request failed.'
     return Response.json({ reason }, { status: 503 })

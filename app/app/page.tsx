@@ -6,10 +6,11 @@ import { rankBatches, schedule, type Batch, type Weather } from '../../lib/sched
 
 type Priority = 'moisture' | 'arrival'
 type Entry = Batch & { key: string }
-type History = { batch: Entry; at: string }
+type History = { batch: Entry; at: string; forecast?: Forecast }
 type Workspace = { batches: Entry[]; history: History[]; priority: Priority; weather: Weather }
 type Forecast = { weather?: Weather; rain?: number[]; peak?: number; validUntil?: number; reason?: string;
-  evidence?: { receiptHash?: string; transaction?: string; provider?: string } }
+  windowStart?: number; threshold?: number;
+  evidence?: { receiptHash?: string; transaction?: string; provider?: string; intent?: string; miner?: string; cost?: number; signalHash?: string } }
 
 const storageKey = 'paddyturn.workspace.v1'
 const initial: Workspace = { batches: [], history: [], priority: 'moisture', weather: 'unknown' }
@@ -23,6 +24,27 @@ function Icon({ name }: { name: 'plus' | 'queue' | 'weather' | 'edit' | 'check' 
     check: 'm5 12 4 4L19 6', close: 'm6 6 12 12M18 6 6 18',
   }
   return <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name]} /></svg>
+}
+
+function ForecastEvidence({ forecast }: { forecast: Forecast }) {
+  const { evidence, peak, rain, windowStart, validUntil, threshold } = forecast
+  return <div className="forecast-evidence">
+    {windowStart !== undefined && validUntil !== undefined &&
+      <p>Forecast window: {new Date(windowStart).toLocaleString()} to {new Date(validUntil).toLocaleString()}</p>}
+    {threshold !== undefined && <p>Rain threshold: {threshold} mm/h</p>}
+    {peak !== undefined && <p>Peak hourly rain: {peak} mm</p>}
+    {!!rain?.length && <p>Hourly rain: {rain.join(', ')} mm</p>}
+    {evidence && <>
+      <p>Network: Ethereum Sepolia</p>
+      {evidence.intent && <p>Intent: <code>{evidence.intent}</code></p>}
+      {(evidence.provider || evidence.miner) && <p>Provider: {evidence.provider || evidence.miner}</p>}
+      {typeof evidence.cost === 'number' && <p>Cost: {evidence.cost} USDC (testnet)</p>}
+      {evidence.receiptHash && <p>Receipt: <code>{evidence.receiptHash}</code></p>}
+      {evidence.signalHash && <p>Signal: <code>{evidence.signalHash}</code></p>}
+      {/^(0x)[0-9a-f]{64}$/i.test(evidence.transaction || '') &&
+        <a href={`https://sepolia.etherscan.io/tx/${evidence.transaction}`} target="_blank" rel="noreferrer">View Sepolia settlement</a>}
+    </>}
+  </div>
 }
 
 export default function Dashboard() {
@@ -119,8 +141,9 @@ export default function Dashboard() {
 
   function record(batch: Entry) {
     if (baseline.needsWeather && forecast && (!forecast.validUntil || forecast.validUntil <= Date.now())) return
+    const usedForecast = baseline.needsWeather && forecast?.evidence?.receiptHash && conditions !== 'unknown' ? forecast : undefined
     save({ ...workspace, batches: batches.filter(item => item.key !== batch.key),
-      history: [{ batch, at: new Date().toISOString() }, ...history] })
+      history: [{ batch, at: new Date().toISOString(), forecast: usedForecast }, ...history] })
     setAssigned(batch.id)
   }
 
@@ -144,8 +167,8 @@ export default function Dashboard() {
           {ordered.length ? <div className="scroll"><table><thead><tr><th>Batch</th><th>Arrival</th><th>Moisture</th><th>Outdoor</th><th><span className="sr">Actions</span></th></tr></thead>
             <tbody>{ordered.map(batch => <tr key={batch.key}><th scope="row">{batch.id}</th><td>{batch.arrival}</td><td>{batch.moisture}%</td><td>{batch.outdoor ? 'Eligible' : '—'}</td><td><button className="icon-button" aria-label={'Edit ' + batch.id} onClick={() => open(batch)}><Icon name="edit" /></button></td></tr>)}</tbody></table></div>
             : <div className="empty"><div className="tile"><Icon name="queue" /></div><h3>{ready ? 'No batches in queue' : 'Opening workspace…'}</h3><p>Add a batch when it arrives at the mill.</p><button disabled={!ready} onClick={() => open()}>Add first batch</button></div>}
-        </> : <><div className="section-bar"><h2>Dryer history</h2></div>{history.length ? <div className="scroll"><table><thead><tr><th>Batch</th><th>Moisture</th><th>Assigned at</th></tr></thead><tbody>
-          {history.map(item => <tr key={item.batch.key}><th scope="row">{item.batch.id}</th><td>{item.batch.moisture}%</td><td>{new Date(item.at).toLocaleString()}</td></tr>)}
+        </> : <><div className="section-bar"><h2>Dryer history</h2></div>{history.length ? <div className="scroll"><table><thead><tr><th>Batch</th><th>Moisture</th><th>Assigned at</th><th>Forecast</th></tr></thead><tbody>
+          {history.map(item => <tr key={item.batch.key}><th scope="row">{item.batch.id}</th><td>{item.batch.moisture}%</td><td>{new Date(item.at).toLocaleString()}</td><td>{item.forecast ? <details className="history-forecast"><summary>View evidence</summary><ForecastEvidence forecast={item.forecast} /></details> : "—"}</td></tr>)}
           </tbody></table></div> : <div className="empty"><h3>No dryer assignments yet</h3><p>Assigned batches appear here.</p></div>}</>}
         <footer>Saved in this browser</footer>
       </section>
@@ -182,11 +205,7 @@ export default function Dashboard() {
           </details>
           {forecast && <div className="forecast-result" aria-live="polite">
             <p>{forecast.reason || (conditions === 'rain' ? 'Rain limit reached.' : conditions === 'dry' ? 'Below the rain limit.' : 'Forecast unavailable.')}</p>
-            {forecast.peak !== undefined && <p>Peak hourly rain: {forecast.peak} mm</p>}
-            {!!forecast.rain?.length && <p>Hourly rain: {forecast.rain.join(', ')} mm</p>}
-            {forecast.evidence?.receiptHash && <p>Receipt <code>{forecast.evidence.receiptHash}</code></p>}
-            {/^(0x)[0-9a-f]{64}$/i.test(forecast.evidence?.transaction || '') &&
-              <a href={`https://sepolia.etherscan.io/tx/${forecast.evidence?.transaction}`} target="_blank" rel="noreferrer">View Sepolia settlement</a>}
+            <ForecastEvidence forecast={forecast} />
           </div>}
         </section>
       </aside>
