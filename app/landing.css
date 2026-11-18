@@ -1,0 +1,32 @@
+.landing-nav { color: inherit; text-decoration: none }
+.landing-nav { color: var(--muted); font-size: .9rem }
+.landing-nav:hover { text-decoration: underline }
+.landing-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr);
+  align-items: center;
+  gap: clamp(32px, 7vw, 88px);
+  padding: clamp(46px, 9vw, 104px) 0;
+}
+.landing-hero h1 { font-size: clamp(3rem, 6.3vw, 5.65rem) }
+.landing-copy > p:not(.kicker) { max-width: 420px; color: var(--muted); line-height: 1.65; margin: 21px 0 25px }
+.landing-action { padding: 11px 16px; border-radius: 9px; text-decoration: none; font-size: .9rem; font-weight: 650; width: fit-content }
+.landing-action:hover { background: #1d402e }
+.landing-preview { margin: 0; background: #fff; border: 1px solid var(--line); border-radius: 21px; overflow: hidden; box-shadow: 0 14px 45px #2236270d }
+.preview-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 21px }
+.preview-header span { font-size: .75rem; color: var(--muted) }
+.preview-next { position: relative; min-height: 142px; margin: 14px; background: #eaf0e2; border-radius: 13px; overflow: hidden }
+.preview-next img { position: absolute; width: 50%; max-width: 230px; bottom: 0; right: 0 }
+.preview-next div { position: relative; display: grid; gap: 7px; padding: 18px }
+.preview-next span, .preview-next small { color: #435a4a; font-size: .83rem }
+.preview-next strong { font: 2rem Georgia, serif }
+.landing-steps { border-top: 1px solid var(--line); padding-top: 24px }
+.landing-steps h2 { font-size: 1.25rem }
+.landing-steps ol { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; padding-left: 20px; margin: 18px 0 0 }
+.landing-steps li { padding-left: 4px }
+.landing-steps h3 { font-size: .98rem; margin: 0 0 5px }
+.landing-steps p { color: var(--muted); font-size: .88rem; line-height: 1.55; margin: 0 }
+@media (max-width: 760px) {
+  .landing-hero, .landing-steps ol { grid-template-columns: 1fr }
+  .landing-steps ol { gap: 14px }
+}

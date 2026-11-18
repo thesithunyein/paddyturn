@@ -3,7 +3,7 @@
   <h1>PaddyTurn</h1>
   <p><strong>Know which paddy batch to dry next.</strong></p>
 
-  [![Open workspace](https://img.shields.io/badge/Open_workspace-244c37?style=for-the-badge&logo=vercel&logoColor=white)](https://paddyturn.vercel.app/)
+  [![Open workspace](https://img.shields.io/badge/Open_workspace-244c37?style=for-the-badge&logo=vercel&logoColor=white)](https://paddyturn.vercel.app/app)
   [![Next.js 16](https://img.shields.io/badge/Next.js-16-181818?style=for-the-badge&logo=nextdotjs)](package.json)
   [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](tsconfig.json)
   [![Security policy](https://img.shields.io/badge/Security-policy-527046?style=for-the-badge&logo=github&logoColor=white)](SECURITY.md)
@@ -65,7 +65,7 @@ npm test
 npm run dev
 ```
 
-Open [localhost:3000](http://127.0.0.1:3000). Run `npm run build` to verify the production build.
+Open [localhost:3000](http://127.0.0.1:3000/app). Run `npm run build` to verify the production build.
 
 For provider discovery, run `npm run probe`. For a paid testnet forecast, copy [the environment template](.env.example) to `.env.local`, configure a dedicated Sepolia wallet funded with test USDC, then run `npm run probe -- --buy`. The probe reports the receipt when available. [Telegraph x402 documentation](https://anjoman.ai/docs/using/x402-inference)
 

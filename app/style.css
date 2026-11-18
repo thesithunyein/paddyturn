@@ -86,3 +86,6 @@ dialog .check { display: flex; align-items: center; gap: 7px; margin: 14px 0 }
 .forecast input { width: 100%; min-width: 0 }
 .forecast .fields { margin: 0 }
 .forecast-result { font-size: .84rem; overflow-wrap: anywhere }
+
+.home-link { color: inherit; text-decoration: none }
+.home-link:hover { text-decoration: underline }
