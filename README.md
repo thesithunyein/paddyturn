@@ -1,19 +1,62 @@
-# PaddyTurn
+<div align="center">
+  <img src="public/paddyturn.svg" width="76" height="76" alt="PaddyTurn rice-stalk logo">
+  <h1>PaddyTurn</h1>
+  <p><strong>Know which paddy batch to dry next.</strong></p>
 
-PaddyTurn helps small rice mills choose which paddy batch gets the next dryer turn.
+  [![Open workspace](https://img.shields.io/badge/Open_workspace-244c37?style=for-the-badge&logo=vercel&logoColor=white)](https://paddyturn.vercel.app/)
+  [![Next.js 16](https://img.shields.io/badge/Next.js-16-181818?style=for-the-badge&logo=nextdotjs)](package.json)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](tsconfig.json)
+  [![Security policy](https://img.shields.io/badge/Security-policy-527046?style=for-the-badge&logo=github&logoColor=white)](SECURITY.md)
+</div>
 
-## Use the workspace
+## Mill workspace
 
-1. Add each incoming batch with its arrival time, measured moisture, and outdoor drying eligibility.
-2. Choose whether the queue prioritizes highest moisture or earliest arrival.
-3. Record outdoor conditions for the current drying window. When the first batch can dry outdoors, PaddyTurn uses that choice to recommend the next batch or ask for review.
-4. Assign the recommended batch to the dryer to move it into history. Check conditions again when planning a new shift.
+PaddyTurn helps small rice mills and cooperative drying stations assign one mechanical dryer slot when several paddy batches arrive together.
 
-The queue, preferences, and assignment history are stored in this browser. Each browser has its own workspace. The app provides a scheduling recommendation. Follow mill procedures and measure moisture before making storage decisions.
+1. **Add batches.** Enter arrival time, measured moisture, and outdoor drying eligibility.
+2. **Set the priority.** Rank by highest moisture or earliest arrival.
+3. **Record outdoor conditions.** Pick a dry window, expected rain, or unconfirmed conditions.
+4. **Assign the next batch.** Check the recommendation, then record the assignment in history.
+
+The queue, preferences, and history are stored in the current browser. Other devices have their own workspaces. Use physical moisture measurements and mill procedures for storage decisions.
+
+## How the next turn is chosen
+
+```mermaid
+flowchart TD
+    A["Rank available batches"] --> B{"Can the top batch dry outdoors?"}
+    B -->|No| C["Recommend the top batch"]
+    B -->|Yes| D{"Outdoor conditions"}
+    D -->|Rain expected| C
+    D -->|Dry window| E["Recommend the highest-ranked indoor batch"]
+    D -->|Unconfirmed| F["Ask the operator to check conditions"]
+    C --> G["Operator confirms assignment"]
+    E -->|Indoor batch available| G
+    E -->|No indoor batch| H["Leave the dryer unassigned"]
+    G --> I["Move batch from queue to history"]
+```
+
+## Architecture
+
+```mermaid
+flowchart TB
+    subgraph Browser["Mill workspace"]
+        UI["Next.js interface"] --> Rules["Deterministic scheduling engine"]
+        UI <-->|Queue and assignments| Store[("Browser storage")]
+        Rules --> UI
+    end
+    subgraph Forecast["Separate forecast tools"]
+        Probe["CLI probe or protected API"] --> Client["x402 client with a payment cap"]
+        Client -->|Sepolia request| Telegraph["Telegraph"]
+        Telegraph -->|Forecast and receipt when available| Client
+    end
+```
+
+Outdoor conditions in the workspace are operator-entered. Forecast tools run separately and do not write to the queue. [Scheduling rules](lib/schedule.ts) · [Forecast client](lib/telegraph.ts)
 
 ## Local development
 
-Use Node.js 24.
+Use Node.js 24 and npm.
 
 ```sh
 npm ci
@@ -21,10 +64,10 @@ npm test
 npm run dev
 ```
 
-Open http://127.0.0.1:3000.
+Open [localhost:3000](http://127.0.0.1:3000). Run `npm run build` to verify the production build.
 
-## Forecast integration
+For provider discovery, run `npm run probe`. For a paid testnet forecast, copy [the environment template](.env.example) to `.env.local`, configure a dedicated Sepolia wallet funded with test USDC, then run `npm run probe -- --buy`. The probe reports the receipt when available. [Telegraph x402 documentation](https://anjoman.ai/docs/using/x402-inference)
 
-The workspace uses operator-entered conditions. The separate Telegraph probe checks forecast availability without changing the workspace.
+## Project policies
 
-Run `npm run probe` for provider discovery. To check a paid response, copy `.env.example` to `.env.local`, use a dedicated Sepolia wallet funded with test USDC, and run `npm run probe -- --buy`. The client limits spend and returns the receipt when available. See the [Telegraph x402 documentation](https://anjoman.ai/docs/using/x402-inference).
+[Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [Code of conduct](CODE_OF_CONDUCT.md)
