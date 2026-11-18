@@ -89,3 +89,6 @@ dialog .check { display: flex; align-items: center; gap: 7px; margin: 14px 0 }
 
 .home-link { color: inherit; text-decoration: none }
 .home-link:hover { text-decoration: underline }
+
+.assignment-notice { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; padding: 10px 14px; margin-bottom: 16px; border: 1px solid var(--line); border-radius: 12px; background: #eaf0e2; overflow-wrap: anywhere }
+.conditions-link { color: var(--green); font-size: .88rem; font-weight: 650; text-underline-offset: 3px }

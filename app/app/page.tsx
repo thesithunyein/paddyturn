@@ -31,6 +31,7 @@ export default function Dashboard() {
   const [storageError, setStorageError] = useState(false)
   const dialog = useRef<HTMLDialogElement>(null)
   const [editing, setEditing] = useState<Entry | null>(null)
+  const [assigned, setAssigned] = useState('')
   const [error, setError] = useState('')
   const [forecast, setForecast] = useState<Forecast>()
   const [checking, setChecking] = useState(false)
@@ -120,6 +121,7 @@ export default function Dashboard() {
     if (baseline.needsWeather && forecast && (!forecast.validUntil || forecast.validUntil <= Date.now())) return
     save({ ...workspace, batches: batches.filter(item => item.key !== batch.key),
       history: [{ batch, at: new Date().toISOString() }, ...history] })
+    setAssigned(batch.id)
   }
 
   return <main>
@@ -127,6 +129,10 @@ export default function Dashboard() {
     <div className="intro"><div><p className="kicker">Mill operations</p><h1>Dryer queue</h1><p>Plan the next dryer turn.</p></div>
       <button className="primary" disabled={!ready} onClick={() => { setTab('queue'); open() }}><Icon name="plus" /> Add batch</button></div>
     {storageError && <p role="alert" className="error">Browser storage is unavailable. Changes may be lost when you leave.</p>}
+    {assigned && <div className="assignment-notice" role="status">
+      <span><strong>{assigned}</strong> assigned to the dryer.</span>
+      <button onClick={() => setTab('history')}>View history</button>
+    </div>}
     <div className="grid">
       <section className="card queue">
         <div className="tabs" aria-label="Workspace view">
@@ -148,17 +154,18 @@ export default function Dashboard() {
           <img className="mill" src="/mill.svg" alt="" />
           <div className="next-copy"><p className="kicker">Planning</p><h2>Next dryer turn</h2>
             <p className="answer">{next?.id ?? (decision.review ? 'Check weather' : '—')}</p>
-            <p>{!batches.length ? 'Add a batch to start.' : decision.review ? forecast?.reason || 'Confirm the outdoor drying window.' : outdoor.length ? 'Outdoor candidates: ' + outdoor.join(', ') : 'Based on your queue priority.'}</p>
+            <p>{!batches.length ? 'Add a batch to start.' : decision.review ? forecast?.reason || 'Choose dry weather or expected rain to see the next batch.' : outdoor.length ? 'Can dry outdoors: ' + outdoor.join(', ') : 'Based on your queue priority.'}</p>
+            {decision.review && <a className="conditions-link" href="#outdoor-conditions">Set outdoor conditions</a>}
             {next && <button className="primary" onClick={() => record(next)}><Icon name="check" /> Assign to dryer</button>}
           </div>
         </section>
-        <section className="card weather"><h2><Icon name="weather" /> Outdoor conditions</h2>
+        <section id="outdoor-conditions" className="card weather"><h2><Icon name="weather" /> Outdoor conditions</h2>
           <div className="weather-options">{weatherOptions.map(option => <button key={option.id} disabled={!ready || checking} aria-pressed={!forecast && weather === option.id} onClick={() => {
             setForecast(undefined)
             save({ ...workspace, weather: option.id })
           }}>{option.label}</button>)}</div>
           <details className="forecast">
-            <summary>Check forecast</summary>
+            <summary>Optional forecast check</summary>
             <form onSubmit={checkForecast}>
               <div className="fields">
                 <label>Latitude<input name="latitude" type="number" min="-90" max="90" step="any" defaultValue="16.78" required /></label>
@@ -166,6 +173,7 @@ export default function Dashboard() {
                 <label>Window (hours)<input name="hours" type="number" min="1" max="6" defaultValue="3" required /></label>
                 <label>Rain limit (mm/h)<input name="threshold" type="number" min="0.01" max="10" step="0.01" defaultValue="0.2" required /></label>
               </div>
+              <p>Use the access token from your workspace administrator.</p>
               <label>Forecast access token<input name="token" type="password" autoComplete="off" required /></label>
               <button type="submit" disabled={!baseline.needsWeather || checking}>{checking ? 'Checking…' : 'Check with testnet USDC'}</button>
               {!baseline.needsWeather && <p>The next batch does not need a forecast.</p>}
@@ -188,7 +196,7 @@ export default function Dashboard() {
         <label>Batch ID<input name="id" required autoFocus maxLength={32} defaultValue={editing.id} placeholder="e.g. PT-024" /></label>
         <div className="fields"><label>Arrival<input name="arrival" type="time" required defaultValue={editing.arrival} /></label>
           <label>Moisture (%)<input name="moisture" type="number" min="0" max="100" step="0.1" required defaultValue={Number.isFinite(editing.moisture) ? editing.moisture : ''} /></label></div>
-        <label className="check"><input type="checkbox" name="outdoor" defaultChecked={editing.outdoor} /> Eligible for outdoor drying</label>
+        <label className="check"><input type="checkbox" name="outdoor" defaultChecked={editing.outdoor} /> This batch can dry outdoors</label>
         {error && <p role="alert" className="error">{error}</p>}
         <div className="actions">{editing.key && <button type="button" className="remove" onClick={() => {
           save({ ...workspace, batches: batches.filter(batch => batch.key !== editing.key) }); setEditing(null)
