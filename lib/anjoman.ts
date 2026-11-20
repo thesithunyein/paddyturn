@@ -4,11 +4,11 @@ const endpoint = 'https://backend.telegraphprotocol.com'
 // This is the live, ranked testnet weather-forecast intent. It can be
 // overridden server-side if Telegraph's active provider catalogue changes.
 const intent = process.env.TELEGRAPH_INTENT?.trim() || 'WEATHER_FORECAST_GENERAL'
-const configuredSpend = Number(process.env.TELEGRAPH_MAX_SPEND_USD || '0.10')
+const configuredSpend = Number(process.env.TELEGRAPH_MAX_SPEND_USD || '0.30')
 // A forecast can involve more than one ranked miner. Keep a real ceiling, but
 // allow enough room for a useful multi-miner answer.
-const maxSpendUsd = Number.isFinite(configuredSpend) && configuredSpend >= 0.01 && configuredSpend <= 0.10
-  ? configuredSpend : 0.10
+const maxSpendUsd = Number.isFinite(configuredSpend) && configuredSpend >= 0.01 && configuredSpend <= 0.30
+  ? configuredSpend : 0.30
 
 type Job = { status?: string; outcome?: string; jobId?: string; id?: string; costUsd?: unknown; cost_usd?: unknown; sources?: unknown; result?: unknown }
 

@@ -76,7 +76,7 @@ Open [localhost:3000](http://127.0.0.1:3000/app). Run `npm run build` to verify 
 
 For provider discovery, run `npm run probe`. Run `npm run probe -- --quote` to verify the Pathein request and inspect the Sepolia quote without signing or paying. The amount is in millionths of test USDC. For a paid testnet forecast, copy [the environment template](.env.example) to `.env.local`, configure a dedicated Sepolia wallet funded with test USDC, then run `npm run probe -- --buy`. The probe reports the receipt when available. [Telegraph x402 documentation](https://anjoman.ai/docs/using/x402-inference)
 
-For the workspace forecast, configure server-side `TELEGRAPH_API_KEY`, `LOCAL_FORECAST_TOKEN`, and `TELEGRAPH_MAX_SPEND_USD=0.10`. Check your Anjoman account has available testnet escrow. Open **Optional forecast check** and enter the workspace access code. The server sends only forecast inputs and has a 0.10 USDC maximum per request. History saves the job ID and cost when the forecast informs an assignment. [Anjoman API setup](https://anjoman.ai/docs/using/api-keys)
+For the workspace forecast, configure server-side `TELEGRAPH_API_KEY`, `LOCAL_FORECAST_TOKEN`, and `TELEGRAPH_MAX_SPEND_USD=0.30`. Check your Anjoman account has available testnet escrow. Open **Optional forecast check** and enter the workspace access code. The server sends only forecast inputs and has a 0.30 USDC maximum per request. History saves the job ID and cost when the forecast informs an assignment. [Anjoman API setup](https://anjoman.ai/docs/using/api-keys)
 
 ## Verification
 
