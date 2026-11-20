@@ -1,17 +1,41 @@
-import { wrapFetchWithPaymentFromConfig } from '@x402/fetch'
-import { ExactEvmScheme } from '@x402/evm'
-import { privateKeyToAccount } from 'viem/accounts'
 import { classifyForecast, classifyWindow } from './forecast.ts'
 
 export const node = 'https://devnode.telegraphprotocol.com'
+// This is the live, ranked testnet weather-forecast intent. Mission pages use
+// human-readable labels; the request must use the currently supported ID.
 export const intent = process.env.TELEGRAPH_INTENT || 'WEATHER_FORECAST_GENERAL'
 const network = 'eip155:11155111'
 const asset = '0xcc194e1a843B658526D0D5C431f670028582Ae17'
 let attempted = false
 
-function forecastRequest(latitude: number, longitude: number, hours: number) {
-  const miner = process.env.TELEGRAPH_MINER_ID || '4433'
-  if (!/^\d+$/.test(miner)) throw new Error('Invalid Telegraph miner ID.')
+type Miner = { id?: unknown; activation_status?: unknown; min_price_usdc?: unknown; scores?: unknown }
+
+async function resolveMiner() {
+  const configured = process.env.TELEGRAPH_MINER_ID?.trim()
+  if (configured) {
+    if (!/^\d+$/.test(configured)) throw new Error('Invalid Telegraph miner ID.')
+    return configured
+  }
+  const response = await fetch(`${node}/api/miners?intent=${encodeURIComponent(intent)}&limit=25`, {
+    signal: AbortSignal.timeout(12_000), cache: 'no-store', redirect: 'error',
+  })
+  if (!response.ok) throw new Error(`Telegraph miner discovery returned HTTP ${response.status}.`)
+  const payload = await response.json() as unknown
+  const miners = Array.isArray(payload) ? payload as Miner[] : []
+  const candidates = miners.map(miner => {
+    const id = typeof miner.id === 'string' || typeof miner.id === 'number' ? String(miner.id) : ''
+    const price = typeof miner.min_price_usdc === 'number' ? miner.min_price_usdc : Number.POSITIVE_INFINITY
+    const score = Array.isArray(miner.scores) ? miner.scores.find((item: { intent_id?: unknown; rank?: unknown }) => item?.intent_id === intent) : undefined
+    const rank = typeof score?.rank === 'number' ? score.rank : Number.POSITIVE_INFINITY
+    return { id, price, rank, active: miner.activation_status === 'active' }
+  }).filter(candidate => candidate.active && /^\d+$/.test(candidate.id) && Number.isFinite(candidate.price))
+    .sort((a, b) => a.rank - b.rank || a.price - b.price)
+  if (!candidates[0]) throw new Error(`No active Telegraph provider is available for ${intent}.`)
+  return candidates[0].id
+}
+
+async function forecastRequest(latitude: number, longitude: number, hours: number) {
+  const miner = await resolveMiner()
   return { miner, url: node + '/engine/v1/ask/' + miner, options: {
     method: 'POST', redirect: 'error' as const, signal: AbortSignal.timeout(25000),
     headers: { 'Content-Type': 'application/json' },
@@ -32,7 +56,7 @@ export function readSepoliaQuote(header: string | null) {
 }
 
 export async function quoteForecast(latitude: number, longitude: number, hours: number) {
-  const { miner, url, options } = forecastRequest(latitude, longitude, hours)
+  const { miner, url, options } = await forecastRequest(latitude, longitude, hours)
   const response = await fetch(url, options)
   if (response.status !== 402) throw new Error(`Expected a Telegraph quote, received HTTP ${response.status}.`)
   return { status: 'quote-only', intent, miner, ...readSepoliaQuote(response.headers.get('payment-required')) }
@@ -44,13 +68,19 @@ export async function purchase(latitude: number, longitude: number, start: numbe
   const cap = Number(process.env.MAX_TEST_MICRO_USDC || '10000')
   if (!Number.isSafeInteger(cap) || cap < 1 || cap > 100000) throw new Error('Invalid testnet spend cap.')
   if (attempted) throw new Error('The local process already attempted a purchase. Review settlement before restarting.')
+  // These libraries are only needed for an actual paid x402 run. Loading them
+  // here keeps quote discovery and its tests usable in Node environments that
+  // do not resolve their ESM subpath exports correctly.
+  const [{ wrapFetchWithPaymentFromConfig }, { ExactEvmScheme }, { privateKeyToAccount }] = await Promise.all([
+    import('@x402/fetch'), import('@x402/evm'), import('viem/accounts'),
+  ])
   const account = privateKeyToAccount(key as `0x${string}`)
   const client = wrapFetchWithPaymentFromConfig(fetch, {
     schemes: [{ network, client: new ExactEvmScheme(account) }],
     spendControls: { allowedAssets: [{ network, asset, maxAmountPerPayment: String(cap) }] },
   })
 
-  const { miner, url, options } = forecastRequest(latitude, longitude, hours)
+  const { miner, url, options } = await forecastRequest(latitude, longitude, hours)
   attempted = true
   const response = await client(url, options)
   if (!response.ok) throw new Error(`Telegraph returned HTTP ${response.status}. Check settlement before retrying.`)

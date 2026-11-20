@@ -1,19 +1,25 @@
 import { classifyForecast, classifyWindow } from './forecast.ts'
 
 const endpoint = 'https://backend.telegraphprotocol.com'
-const intent = 'WEATHER_FORECAST_GENERAL'
-const maxSpendUsd = 0.03
+// This is the live, ranked testnet weather-forecast intent. It can be
+// overridden server-side if Telegraph's active provider catalogue changes.
+const intent = process.env.TELEGRAPH_INTENT?.trim() || 'WEATHER_FORECAST_GENERAL'
+const configuredSpend = Number(process.env.TELEGRAPH_MAX_SPEND_USD || '0.10')
+// A forecast can involve more than one ranked miner. Keep a real ceiling, but
+// allow enough room for a useful multi-miner answer.
+const maxSpendUsd = Number.isFinite(configuredSpend) && configuredSpend >= 0.01 && configuredSpend <= 0.10
+  ? configuredSpend : 0.10
 
-type Job = { status?: string; outcome?: string; jobId?: string; costUsd?: unknown; sources?: unknown }
+type Job = { status?: string; outcome?: string; jobId?: string; id?: string; costUsd?: unknown; cost_usd?: unknown; sources?: unknown; result?: unknown }
 
 export function anjomanResult(job: Job, jobId: string | undefined, start: number, hours: number, threshold: number) {
-  const cost = job.costUsd
+  const cost = job.costUsd ?? job.cost_usd
   const evidence = { billing: 'anjoman' as const, jobId, intent,
     cost: typeof cost === 'number' && Number.isFinite(cost) && cost >= 0 ? cost : undefined }
-  if (!(job.status === 'complete' || job.outcome === 'complete') || !jobId || evidence.cost === undefined || evidence.cost <= 0 || evidence.cost > maxSpendUsd) {
+  if (!(job.status === 'complete' || job.status === 'completed' || job.outcome === 'complete' || job.outcome === 'completed') || !jobId || evidence.cost === undefined || evidence.cost <= 0 || evidence.cost > maxSpendUsd) {
     return { weather: 'unknown' as const, evidence, reason: 'Anjoman did not confirm a completed paid forecast. Check the job and available balance.' }
   }
-  const results = Array.isArray(job.sources) ? job.sources : []
+  const results = Array.isArray(job.sources) ? job.sources : job.result ? [job.result] : []
   for (const source of results) {
     const data = source?.result ?? source?.data?.result ?? source?.data ?? source
     if (!data || typeof data !== 'object') continue
@@ -42,7 +48,8 @@ export async function requestAnjomanForecast(latitude: number, longitude: number
   })
   if (!response.ok) throw new Error(`Anjoman returned HTTP ${response.status}. Check API access and account balance.`)
   let job: Job = await response.json()
-  const jobId = typeof job.jobId === 'string' && /^[0-9a-f-]{36}$/i.test(job.jobId) ? job.jobId : undefined
+  const candidateJobId = job.jobId ?? job.id
+  const jobId = typeof candidateJobId === 'string' && /^[0-9a-f-]{36}$/i.test(candidateJobId) ? candidateJobId : undefined
   try {
     while (job.status === 'running' && jobId && !signal.aborted) {
       await new Promise(resolve => setTimeout(resolve, 2500))

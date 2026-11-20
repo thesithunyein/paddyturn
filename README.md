@@ -56,6 +56,12 @@ flowchart TB
 
 A usable forecast informs the current recommendation. The operator confirms the assignment. Unavailable or expired data calls for operator review. [Scheduling rules](lib/schedule.ts) · [Forecast client](lib/telegraph.ts)
 
+## Telegraph Hackathon
+
+PaddyTurn is prepared for **Telegraph Season II — Apps & Agents, Mission 06: Resources & Agriculture**. The paid forecast path uses the currently active `WEATHER_FORECAST_GENERAL` testnet Intent and selects the best-ranked discoverable provider unless a reviewer pins a provider ID in configuration. The in-product evidence record keeps the request window, intent, job/receipt details where supplied, provider, and observed cost alongside the dryer assignment.
+
+See [HACKATHON.md](HACKATHON.md) for the reviewer flow, evidence checklist, demo script, and public-update drafts. This project labels testnet evidence, unverified field use, and any limitations honestly.
+
 ## Local development
 
 Use Node.js 24 and npm.
@@ -70,7 +76,7 @@ Open [localhost:3000](http://127.0.0.1:3000/app). Run `npm run build` to verify 
 
 For provider discovery, run `npm run probe`. Run `npm run probe -- --quote` to verify the Pathein request and inspect the Sepolia quote without signing or paying. The amount is in millionths of test USDC. For a paid testnet forecast, copy [the environment template](.env.example) to `.env.local`, configure a dedicated Sepolia wallet funded with test USDC, then run `npm run probe -- --buy`. The probe reports the receipt when available. [Telegraph x402 documentation](https://anjoman.ai/docs/using/x402-inference)
 
-For the workspace forecast, configure server-side `TELEGRAPH_API_KEY` and `LOCAL_FORECAST_TOKEN`. Check your Anjoman account has available testnet escrow. Open **Optional forecast check** and enter the workspace access code. The server sends only forecast inputs, with a 0.03 USDC maximum per request. History saves the job ID and cost when the forecast informs an assignment. [Anjoman API setup](https://anjoman.ai/docs/using/api-keys)
+For the workspace forecast, configure server-side `TELEGRAPH_API_KEY`, `LOCAL_FORECAST_TOKEN`, and `TELEGRAPH_MAX_SPEND_USD=0.10`. Check your Anjoman account has available testnet escrow. Open **Optional forecast check** and enter the workspace access code. The server sends only forecast inputs and has a 0.10 USDC maximum per request. History saves the job ID and cost when the forecast informs an assignment. [Anjoman API setup](https://anjoman.ai/docs/using/api-keys)
 
 ## Verification
 
