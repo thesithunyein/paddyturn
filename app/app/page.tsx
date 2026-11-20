@@ -189,28 +189,30 @@ export default function Dashboard() {
             setForecast(undefined)
             save({ ...workspace, weather: option.id })
           }}>{option.label}</button>)}</div>
-          <details className="forecast">
-            <summary>Optional forecast check</summary>
-            <form onSubmit={checkForecast}>
-              <div className="fields">
-                <label>Latitude<input name="latitude" type="number" min="-90" max="90" step="any" defaultValue="16.78" required /></label>
-                <label>Longitude<input name="longitude" type="number" min="-180" max="180" step="any" defaultValue="94.73" required /></label>
-                <label>Window (hours)<input name="hours" type="number" min="1" max="6" defaultValue="3" required /></label>
-                <label>Rain limit (mm/h)<input name="threshold" type="number" min="0.01" max="10" step="0.01" defaultValue="0.2" required /></label>
-              </div>
-              <p>Ask your mill manager for the forecast access code.</p>
-              <label>Forecast access code<input name="token" type="password" autoComplete="off" required /></label>
-              <button type="submit" disabled={!baseline.needsWeather || checking}>{checking ? 'Checking…' : 'Get forecast'}</button>
-              {!baseline.needsWeather && <p>The next batch does not need a forecast.</p>}
-            </form>
-          </details>
-          {forecast && <div className="forecast-result" aria-live="polite">
-            <p>{forecast.reason || (conditions === 'rain' ? 'Rain limit reached.' : conditions === 'dry' ? 'Below the rain limit.' : 'Forecast unavailable.')}</p>
-            <ForecastEvidence forecast={forecast} />
-          </div>}
         </section>
       </aside>
     </div>
+    <details className="card forecast forecast-panel">
+      <summary>Optional forecast check</summary>
+      <div className="forecast-panel-body">
+        <form onSubmit={checkForecast}>
+          <div className="fields">
+            <label>Latitude<input name="latitude" type="number" min="-90" max="90" step="any" defaultValue="16.78" required /></label>
+            <label>Longitude<input name="longitude" type="number" min="-180" max="180" step="any" defaultValue="94.73" required /></label>
+            <label>Window (hours)<input name="hours" type="number" min="1" max="6" defaultValue="3" required /></label>
+            <label>Rain limit (mm/h)<input name="threshold" type="number" min="0.01" max="10" step="0.01" defaultValue="0.2" required /></label>
+          </div>
+          <p>Ask your mill manager for the forecast access code.</p>
+          <label>Forecast access code<input name="token" type="password" autoComplete="off" required /></label>
+          <button type="submit" disabled={!baseline.needsWeather || checking}>{checking ? 'Checking…' : 'Get forecast'}</button>
+          {!baseline.needsWeather && <p>The next batch does not need a forecast.</p>}
+        </form>
+        {forecast && <div className="forecast-result" aria-live="polite">
+          <p>{forecast.reason || (conditions === 'rain' ? 'Rain limit reached.' : conditions === 'dry' ? 'Below the rain limit.' : 'Forecast unavailable.')}</p>
+          <ForecastEvidence forecast={forecast} />
+        </div>}
+      </div>
+    </details>
     {editing && <dialog ref={dialog} aria-label={editing.key ? 'Edit batch' : 'Add batch'} onCancel={() => setEditing(null)}>
       <form onSubmit={submit}>
         <div className="section-bar"><h2>{editing.key ? 'Edit batch' : 'Add batch'}</h2><button type="button" className="icon-button" aria-label="Close" onClick={() => setEditing(null)}><Icon name="close" /></button></div>
