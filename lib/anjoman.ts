@@ -28,12 +28,14 @@ export function anjomanResult(job: Job, jobId: string | undefined, start: number
         ? classifyForecast(data.hourly, start, hours, threshold)
         : classifyWindow(data, start, hours, threshold)
       const provider = source?.miner_name ?? source?.minerName
-      return { ...forecast, evidence: { ...evidence, provider: typeof provider === 'string' ? provider : undefined } }
+      const hash = source?.signal_hash ?? source?.signalHash
+      const signalHash = typeof hash === 'string' && /^0x[0-9a-f]{64}$/i.test(hash) ? hash : undefined
+      return { ...forecast, evidence: { ...evidence, signalHash, provider: typeof provider === 'string' ? provider : undefined } }
     } catch {
       // A source can lack the full forecast window. Check the remaining sources.
     }
   }
-  return { weather: 'unknown' as const, evidence, reason: 'Anjoman did not return source data covering the requested rainfall window. Review conditions manually.' }
+  return { weather: 'unknown' as const, evidence, reason: 'Result received, but hourly coverage couldn’t be confirmed. Review conditions manually.' }
 }
 
 export async function requestAnjomanForecast(latitude: number, longitude: number, start: number, hours: number, threshold: number) {
@@ -43,7 +45,7 @@ export async function requestAnjomanForecast(latitude: number, longitude: number
   const signal = AbortSignal.timeout(105_000)
   const response = await fetch(`${endpoint}/agent/chat`, {
     method: 'POST', headers, signal, redirect: 'error', cache: 'no-store',
-    body: JSON.stringify({ message: `Hourly precipitation forecast for ${latitude},${longitude} starting ${new Date(start).toISOString()}.`,
+    body: JSON.stringify({ message: `For ${latitude},${longitude}, give ${hours} hourly precipitation amounts in mm from ${new Date(start).toISOString()} up to, excluding, ${new Date(start + hours * 3_600_000).toISOString()}. Return structured hourly timestamps and amounts, or a total_precipitation_mm with explicit start_time and exclusive end_time. Do not estimate missing values.`,
       intent, params: { location: `${latitude},${longitude}`, window_hours: hours }, maxSpendUsd, stream: false }),
   })
   if (!response.ok) throw new Error(`Anjoman returned HTTP ${response.status}. Check API access and account balance.`)

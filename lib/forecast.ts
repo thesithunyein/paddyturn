@@ -14,6 +14,15 @@ export function classifyForecast(hours: unknown, start: number, count: number, t
 }
 
 export function classifyWindow(result: Record<string, unknown> | undefined, start: number, count: number, threshold: number) {
+  // An exact zero total bounds every hourly amount, provided the source
+  // explicitly covers the whole window. A free-text window is insufficient.
+  const windowStart = result?.start_time
+  const windowEnd = result?.end_time
+  if (result?.total_precipitation_mm === 0 && typeof windowStart === 'string' && typeof windowEnd === 'string'
+    && /(?:Z|[+-]\d\d:\d\d)$/i.test(windowStart) && /(?:Z|[+-]\d\d:\d\d)$/i.test(windowEnd)
+    && Date.parse(windowStart) === start && Date.parse(windowEnd) === start + count * 3_600_000) {
+    return { weather: 'dry' as const, rain: [], peak: 0 }
+  }
   const peak = result?.hourly_max_precipitation_mm ?? result?.max_precipitation_mm
   const timestamp = result?.start_time
   const normalized = typeof timestamp === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?$/.test(timestamp)
