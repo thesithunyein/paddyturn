@@ -16,8 +16,14 @@ export function anjomanResult(job: Job, jobId: string | undefined, start: number
   const cost = job.costUsd ?? job.cost_usd
   const evidence = { billing: 'anjoman' as const, jobId, intent,
     cost: typeof cost === 'number' && Number.isFinite(cost) && cost >= 0 ? cost : undefined }
-  if (!(job.status === 'complete' || job.status === 'completed' || job.outcome === 'complete' || job.outcome === 'completed') || !jobId || evidence.cost === undefined || evidence.cost <= 0 || evidence.cost > maxSpendUsd) {
-    return { weather: 'unknown' as const, evidence, reason: 'Anjoman did not confirm a completed paid forecast. Check the job and available balance.' }
+  const completed = ['complete', 'completed', 'done']
+  if (!completed.includes(job.status ?? '') && !completed.includes(job.outcome ?? '')) {
+    return { weather: 'unknown' as const, evidence,
+      reason: 'Forecast completion could not be verified. Open the existing Anjoman job for its outcome before retrying.' }
+  }
+  if (!jobId || evidence.cost === undefined || evidence.cost <= 0 || evidence.cost > maxSpendUsd) {
+    return { weather: 'unknown' as const, evidence,
+      reason: 'Anjoman reported completion, but the job ID or paid cost could not be verified.' }
   }
   const results = Array.isArray(job.sources) ? job.sources : job.result ? [job.result] : []
   for (const source of results) {
