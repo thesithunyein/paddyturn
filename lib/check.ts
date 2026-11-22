@@ -9,8 +9,13 @@ type Checked = {
 // - Not yet published: keep the paid answer (provider's daily peak), mark pending.
 // - Published but not verified, or for another intent: do not use the forecast.
 // - Verified with hourly data covering the window: decide on the exact window.
+export type CheckResult<T> = Omit<T, 'weather' | 'chance' | 'reason'> & {
+  weather: 'dry' | 'rain' | 'unknown'; chance?: number; reason?: string
+  record: 'none' | 'pending' | 'verified' | 'failed'; scope: 'window' | 'day'; dailyPeak?: number
+}
+
 export function applySignalCheck<T extends Checked>(forecast: T, record: SignalRecord | undefined,
-  windowStart: number, hours: number, threshold: number) {
+  windowStart: number, hours: number, threshold: number): CheckResult<T> {
   if (!forecast.evidence.signalHash) return { ...forecast, record: 'none' as const, scope: 'day' as const }
   if (!record) return { ...forecast, record: 'pending' as const, scope: 'day' as const }
   if (!record.verified || (record.intent && forecast.evidence.intent && record.intent !== forecast.evidence.intent)) {
