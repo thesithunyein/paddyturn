@@ -16,7 +16,7 @@ PaddyTurn helps small rice mills and cooperative drying stations assign one mech
 
 1. **Add batches.** Enter arrival time, measured moisture, and outdoor drying eligibility.
 2. **Set the priority.** Choose **Wettest first** or **First to arrive**.
-3. **Record outdoor conditions.** Enter them manually or check Telegraph when weather could change the next assignment.
+3. **Record outdoor conditions.** Enter them manually or buy a rain-chance forecast through Telegraph when weather could change the next assignment.
 4. **Assign the next batch.** Check the recommendation, then record the assignment in history.
 
 The queue, preferences, and history are stored in the current browser. Other devices have their own workspaces. Use physical moisture measurements and mill procedures for storage decisions.
@@ -47,18 +47,23 @@ flowchart TB
         Rules --> UI
     end
     subgraph Forecast["Protected forecast service"]
-        Probe["Workspace forecast check"] --> Client["Anjoman API client with a spend cap"]
-        Client -->|Escrow-funded request| Telegraph["Telegraph"]
-        Telegraph -->|Forecast sources, job ID and cost| Client
+        Probe["Workspace forecast check"] --> Guard["Access code, request budget, daily budget"]
+        Guard --> Client["Engine client"]
+        Client -->|"Routed ask: WEATHER_FORECAST_GENERAL, escrow"| Telegraph["Telegraph ranked miners"]
+        Telegraph -->|"Rain chance, field status, signal hash, receipts, cost"| Client
     end
     UI -->|Weather-dependent decision| Probe
 ```
 
-A usable forecast informs the current recommendation. The operator confirms the assignment. Unavailable or expired data calls for operator review. [Scheduling rules](lib/schedule.ts) · [Forecast client](lib/telegraph.ts)
+A forecast informs the recommendation only when Telegraph verified the rain-chance field and returned a signal hash or payment receipt within budget. The operator confirms the assignment. Unavailable, partial or expired data calls for operator review. [Scheduling rules](lib/schedule.ts) · [Engine client](lib/engine.ts) · [Forecast rules](lib/forecast.ts)
+
+## Why buy the forecast through Telegraph
+
+A free weather app tells the operator what might happen. PaddyTurn keeps **why a batch was dried when it was**: which ranked provider answered, the rain chance it returned, what the check cost, and a signal hash and receipt that anyone can look up later. Cooperatives, mill owners and crop-loss or insurance reviews can audit a disputed drying decision instead of relying on memory. A check costs about one cent of test USDC on testnet, and only happens when an outdoor-eligible batch is at the top of the queue.
 
 ## Telegraph Hackathon
 
-PaddyTurn is prepared for **Telegraph Season II — Apps & Agents, Mission 06: Resources & Agriculture**. The paid forecast path uses the currently active `WEATHER_FORECAST_GENERAL` testnet Intent and selects the best-ranked discoverable provider unless a reviewer pins a provider ID in configuration. The in-product evidence record keeps the request window, intent, job/receipt details where supplied, provider, and observed cost alongside the dryer assignment.
+PaddyTurn is prepared for **Telegraph Season II — Apps & Agents, Mission 06: Resources & Agriculture**. The workspace makes a routed, budgeted ask for the live `WEATHER_FORECAST_GENERAL` testnet intent, so Telegraph picks the best-ranked miner and can fall back to another one. The decision uses the intent's `precipitation_probability_pct` field only when its `field_status` is `ok`. The evidence record keeps the location, rain chance, limit, provider, cost, signal hash and `fulfillment.payments` receipts with the dryer assignment.
 
 See [HACKATHON.md](HACKATHON.md) for the reviewer flow, evidence checklist, demo script, and public-update drafts. This project labels testnet evidence, unverified field use, and any limitations honestly.
 
@@ -76,21 +81,30 @@ Open [localhost:3000](http://127.0.0.1:3000/app). Run `npm run build` to verify 
 
 For provider discovery, run `npm run probe`. Run `npm run probe -- --quote` to verify the Pathein request and inspect the Sepolia quote without signing or paying. The amount is in millionths of test USDC. For a paid testnet forecast, copy [the environment template](.env.example) to `.env.local`, configure a dedicated Sepolia wallet funded with test USDC, then run `npm run probe -- --buy`. The probe reports the receipt when available. [Telegraph x402 documentation](https://anjoman.ai/docs/using/x402-inference)
 
-For the workspace forecast, configure server-side `TELEGRAPH_API_KEY`, `LOCAL_FORECAST_TOKEN`, and `TELEGRAPH_MAX_SPEND_USD=0.30`. Check your Anjoman account has available testnet escrow. Open **Optional forecast check** and enter the workspace access code. The server sends only forecast inputs and has a 0.30 USDC maximum per request. History saves the job ID and cost when the forecast informs an assignment. [Anjoman API setup](https://anjoman.ai/docs/using/api-keys)
+For the workspace forecast, configure server-side `TELEGRAPH_API_KEY`, `LOCAL_FORECAST_TOKEN`, `TELEGRAPH_MAX_SPEND_USD=0.10` and `TELEGRAPH_DAILY_BUDGET_USD=1`. Check your Anjoman account has available testnet escrow, and keep that balance small. Open **Optional forecast check** and enter the workspace access code. The server sends only the place name and window, reserves the request budget against the daily budget, and settles to the observed cost. History saves the receipts, signal hash and cost when the forecast informs an assignment. [Anjoman API setup](https://anjoman.ai/docs/using/api-keys) · [Engine reference](https://anjoman.ai/docs/using/engine-ask)
+
+To check any recorded signal: `curl https://devnode.telegraphprotocol.com/engine/v1/signal/<signal_hash>`.
 
 ## Verification
 
 - **Workspace:** Browser walkthrough verified adding batches, switching weather choices, recording a dryer assignment, and recovering it from History after reload. The walkthrough used test batches.
-- **Forecast:** Telegraph returned an x402 payment quote for the Pathein request. A funded Sepolia purchase, usable forecast response, and receipt have yet to be verified end to end.
+- **Forecast:** Telegraph returned an x402 payment quote for the Pathein request. A funded escrow purchase, usable forecast response, and receipt have yet to be verified end to end. Response parsing follows the published `WEATHER_FORECAST_GENERAL` v4 format and is covered by unit tests.
 - **Field use:** A mill-operator walkthrough and independent reproduction are still pending.
 
 ## Reviewer walkthrough
 
 1. Open the workspace and add two test batches. Give the first a higher moisture reading and allow it to dry outdoors. Keep the second indoors.
-2. Use **Wettest first** and **Not sure**. The workspace should ask for weather. Open **Optional forecast check**, enter the access code privately, and run an Anjoman forecast for the mill location.
-3. Check the precipitation, threshold, job ID and cost. If the forecast is usable, confirm the recommended batch. Reload, open **History**, and expand **View evidence**.
+2. Use **Wettest first** and **Not sure**. The workspace should ask for weather. Open **Optional forecast check**, enter the access code privately, and run a forecast for the mill location (try your own town too).
+3. Check the rain chance, limit, provider, receipt, signal hash and cost. Run it again with the limit set above and then below the returned chance to see the recommendation flip (each run is a separate paid check). Confirm the recommended batch, reload, open **History**, and expand **View evidence**.
 4. For a failure case, use a deliberately invalid access code on a weather-dependent queue. The app should ask for operator review and show no paid job evidence.
-5. Save the real job ID and cost for the submission. Label the queue as test data unless supplied by an operator. The quote alone does not prove settlement.
+5. Look up the signal hash with the `curl` command above. Label the queue as test data unless supplied by an operator. The quote alone does not prove settlement.
+
+## What changes for mainnet
+
+- Set `TELEGRAPH_API_BASE` to the production Anjoman endpoint and use a production API key with a funded escrow. No code changes.
+- Keep the per-request and daily budgets, and move the daily budget to a shared store (for example Redis) so it holds across serverless instances.
+- Replace the shared access code with per-mill accounts, and move the queue from browser storage to a server database so a cooperative can see several mills.
+- Keep the evidence rules: no verified field status, signal hash or receipt, no forecast-based decision.
 
 ## Project policies
 

@@ -8,5 +8,6 @@ Include the affected component or URL, expected and observed behavior, impact, a
 
 - The workspace uses browser storage. People with access to the same browser profile can access its saved workspace.
 - Keep wallet keys and `LOCAL_FORECAST_TOKEN` in local or server-side configuration. Use a dedicated Sepolia test wallet.
-- The forecast endpoint requires a configured access token. The x402 client restricts payment to the configured Sepolia asset and applies a per-payment cap. The one-attempt guard is scoped to a process.
+- The forecast endpoint requires a configured access token, caps each request budget (0.01–0.26 USD on testnet) and applies a daily budget per server instance. Keep the Anjoman escrow balance small; it is the account-wide backstop.
+- The x402 client restricts payment to the configured Sepolia asset and applies a per-payment cap. The one-attempt guard is scoped to a process.
 - Check settlement before repeating a paid request after a timeout.
