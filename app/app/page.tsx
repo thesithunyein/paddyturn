@@ -11,6 +11,7 @@ type Workspace = { batches: Entry[]; history: History[]; priority: Priority; wea
 // `rain`, `peak` and `jobId` are kept so assignments recorded by earlier
 // versions still display their evidence.
 type Forecast = { weather?: Weather; chance?: number; condition?: string; when?: string; location?: string
+  scope?: 'window' | 'day'; dailyPeak?: number; record?: 'verified' | 'pending' | 'failed' | 'none'; windowHours?: number
   rain?: number[]; peak?: number; validUntil?: number; reason?: string; windowStart?: number; threshold?: number
   evidence?: { billing?: 'escrow' | 'anjoman'; jobId?: string; receiptHash?: string; receipts?: string[]; transaction?: string
     provider?: string; minerId?: string; intent?: string; miner?: string; cost?: number; signalHash?: string; fulfillment?: string } }
@@ -29,7 +30,7 @@ function Icon({ name }: { name: 'plus' | 'queue' | 'weather' | 'edit' | 'check' 
   return <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name]} /></svg>
 }
 
-const signalUrl = (hash: string) => `https://devnode.telegraphprotocol.com/engine/v1/signal/${hash}`
+const signalUrl = (hash: string) => `/proof/${hash}`
 const short = (value: string) => value.length > 18 ? `${value.slice(0, 8)}…${value.slice(-6)}` : value
 
 function CopyValue({ label, value }: { label: string; value: string }) {
@@ -44,7 +45,8 @@ function CopyValue({ label, value }: { label: string; value: string }) {
 }
 
 function ForecastEvidence({ forecast }: { forecast: Forecast }) {
-  const { evidence, peak, rain, windowStart, validUntil, threshold, chance, condition, when, location, weather } = forecast
+  const { evidence, peak, rain, windowStart, validUntil, threshold, chance, condition, when, location, weather,
+    scope, dailyPeak, record, windowHours } = forecast
   if (!evidence && chance === undefined && peak === undefined) return null
   const receipts = [...(evidence?.receipts ?? []), ...(evidence?.receiptHash ? [evidence.receiptHash] : [])]
   const verified = Boolean(evidence?.signalHash || receipts.length)
@@ -54,10 +56,13 @@ function ForecastEvidence({ forecast }: { forecast: Forecast }) {
   return <div className="evidence">
     <div className="evidence-head">
       <span className={verified ? 'badge ok' : 'badge warn'}>{verified ? <><Icon name="check" /> Verified by Telegraph</> : 'Not verified'}</span>
+      {record === 'verified' && <span className="badge ok">Public record checked</span>}
+      {record === 'pending' && <span className="badge net">Public record pending</span>}
       <span className="badge net">Testnet</span>
     </div>
     {chance !== undefined && <div className="evidence-main">
-      <p className="evidence-figure"><strong>{chance}%</strong><span>chance of rain{condition ? ` · ${condition}` : ''}</span></p>
+      <p className="evidence-figure"><strong>{chance}%</strong><span>{scope === 'window' && windowHours
+        ? `chance of rain, next ${windowHours} h` : 'chance of rain today'}{condition ? ` · ${condition}` : ''}</span></p>
       {usable && threshold !== undefined && <p className={weather === 'rain' ? 'verdict rain' : 'verdict dry'}>
         {weather === 'rain' ? `${threshold}% or more. Keep it in the dryer queue.` : `Below ${threshold}%. Safe to dry outside.`}</p>}
     </div>}
@@ -81,6 +86,8 @@ function ForecastEvidence({ forecast }: { forecast: Forecast }) {
         {evidence.fulfillment && <div className="tech-row"><dt>Fulfillment</dt><dd>{evidence.fulfillment}</dd></div>}
         <div className="tech-row"><dt>Billing</dt><dd>{evidence.billing ? 'Anjoman testnet escrow' : 'Ethereum Sepolia (testnet)'}</dd></div>
         {when && <div className="tech-row"><dt>Provider period</dt><dd>from {when}</dd></div>}
+        {dailyPeak !== undefined && <div className="tech-row"><dt>Day peak</dt><dd>{dailyPeak}% (provider answer)</dd></div>}
+        {scope && <div className="tech-row"><dt>Decided on</dt><dd>{scope === 'window' ? 'Hourly data for your window, from Telegraph’s public record' : 'The provider’s daily peak'}</dd></div>}
         {windowStart !== undefined && validUntil !== undefined && <div className="tech-row"><dt>Requested window</dt>
           <dd>{new Date(windowStart).toLocaleTimeString([], { timeStyle: 'short' })}–{new Date(validUntil).toLocaleTimeString([], { timeStyle: 'short' })}</dd></div>}
         {threshold !== undefined && <div className="tech-row"><dt>Rain limit</dt><dd>{threshold}{unit}</dd></div>}

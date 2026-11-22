@@ -2,6 +2,8 @@ import { timingSafeEqual } from 'node:crypto'
 import { createBudget } from '../../../lib/budget'
 import { requestBudgetUsd, requestForecast, routedCapUsd } from '../../../lib/engine'
 import { validLocation } from '../../../lib/forecast'
+import { applySignalCheck } from '../../../lib/check'
+import { awaitSignal } from '../../../lib/signal'
 
 export const maxDuration = 60
 
@@ -35,7 +37,11 @@ export async function POST(request: Request) {
     // the account can actually be charged for one ask.
     const forecast = await requestForecast(location, hours as number, threshold as number, Math.max(requestBudget, routedCapUsd))
     budget.settle(routedCapUsd, forecast.evidence.cost)
-    return Response.json({ ...forecast, location: ('location' in forecast && forecast.location) || location.trim(), windowStart, threshold, validUntil: windowStart + (hours as number) * 3_600_000 })
+    // Free cross-check: Telegraph's public record of this signal, read through
+    // a second endpoint. Gives verification and hourly data for the exact window.
+    const record = forecast.evidence.signalHash ? await awaitSignal(forecast.evidence.signalHash, 4, 4_000) : undefined
+    const checked = applySignalCheck(forecast, record, windowStart, hours as number, threshold as number)
+    return Response.json({ ...checked, windowHours: hours, location: ('location' in forecast && forecast.location) || record?.place || location.trim(), windowStart, threshold, validUntil: windowStart + (hours as number) * 3_600_000 })
   } catch (error) {
     // Engine errors before a paid call are documented as not charged; a
     // timeout may still have been charged, so the reservation is kept.
