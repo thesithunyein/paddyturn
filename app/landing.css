@@ -237,3 +237,9 @@
 @media (max-width: 760px) {
   .landing-audience, .landing-proof { grid-template-columns: 1fr }
 }
+
+/* Concise copy: let the short headline breathe on two lines */
+.landing-hero h1 { max-width: 11ch }
+.landing-copy p { max-width: 30ch }
+.landing-audience > div { padding: 14px 16px }
+.landing-audience h2 { margin-bottom: 3px }

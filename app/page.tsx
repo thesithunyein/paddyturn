@@ -7,34 +7,31 @@ const proofSignal = '0xd06ae8c038d83ecd2c1fc631210b7e87dad9cdb618abca1547b43d205
 const proofUrl = `https://devnode.telegraphprotocol.com/engine/v1/signal/${proofSignal}`
 
 const audience = [
-  ['Small rice mills', 'One mechanical dryer and several wet batches arriving at once.'],
-  ['Cooperative drying stations', 'Shared drying floors and a queue that changes with the weather.'],
-  ['Owners and reviewers', 'A record of why each batch was dried when it was, with proof behind it.'],
+  ['Small rice mills', 'One dryer, many batches.'],
+  ['Drying cooperatives', 'Shared floors, changing weather.'],
+  ['Mill owners', 'Proof behind every decision.'],
 ]
 
 const steps = [
-  ['Add your batches', 'Enter when each batch arrived, its moisture reading, and whether it can dry outside.'],
-  ['Check the weather', 'Choose dry or rain yourself, or buy a rain-chance forecast for your mill through Telegraph.'],
-  ['Choose the next batch', 'Assign the recommended batch to the dryer. History keeps the decision and any forecast proof.'],
+  ['Add batches', 'Arrival time, moisture, outdoor or not.'],
+  ['Check the rain', 'Choose it yourself or buy a verified forecast.'],
+  ['Assign the dryer', 'History keeps the decision and its proof.'],
 ]
 
 const proofPoints = [
-  ['Ranked weather source', 'Telegraph sends each check to the best-ranked forecast provider for your place.'],
-  ['Paid and receipted', 'Each check costs about one cent of test USDC and comes back with a payment receipt.'],
-  ['Anyone can check it', 'Every forecast has a public signal. Open it on Telegraph to see the original answer.'],
+  ['Ranked source', 'The best forecast provider for your place.'],
+  ['Receipted', 'About 1¢ a check, with a payment receipt.'],
+  ['Public', 'Anyone can open the original answer.'],
 ]
 
 const questions = [
-  ['Do I need an account?', 'Open the workspace and add your first batch. No sign-up is required.'],
-  ['Where are my batches and history saved?', 'They stay in this browser. Use the same browser profile to see them again.'],
-  ['Can I fix a batch I entered incorrectly?', 'Use the edit button next to a waiting batch to correct its arrival time, moisture reading, or outdoor drying option.'],
-  ['Can I move between my phone and computer?', 'You can open PaddyTurn on either device. Each browser keeps its own queue and history.'],
-  ['Where does the weather forecast come from?', 'PaddyTurn buys it through Telegraph, which routes each request to the best-ranked forecast provider for the place you enter. Today this runs on Telegraph’s testnet.'],
-  ['What does a forecast check cost?', 'About one cent of test USDC per check, with a hard cap per request and a daily limit. PaddyTurn only asks for a forecast when the top batch could dry outdoors.'],
-  ['How can I check a forecast is real?', 'Open View evidence in History and choose Check this forecast on Telegraph. It shows the provider’s original answer and its verification.'],
-  ['What if the forecast is unclear or fails?', 'PaddyTurn does not guess. It asks you to check conditions yourself, and records no forecast with the assignment.'],
-  ['How does PaddyTurn choose the next batch?', 'It ranks the queue by moisture or arrival time. If a dry window lets the first batch go outdoors, it recommends the highest-ranked batch that needs the dryer.'],
-  ['Can I use it to decide when paddy is ready for storage?', 'Use a physical moisture reading and follow your mill’s storage procedures. PaddyTurn helps you schedule the dryer.'],
+  ['Do I need an account?', 'No. Open the workspace and add a batch.'],
+  ['Where is my data saved?', 'In this browser. Each device keeps its own queue.'],
+  ['Where does the forecast come from?', 'Telegraph routes it to the best-ranked weather provider. Testnet for now.'],
+  ['What does a check cost?', 'About 1¢ of test USDC, with per-request and daily caps.'],
+  ['How do I check a forecast is real?', 'History → View evidence → Check on Telegraph.'],
+  ['What if the forecast fails?', 'PaddyTurn won’t guess. It asks you to check the sky.'],
+  ['Does it decide storage readiness?', 'No. Use a moisture meter and your mill’s procedures.'],
 ]
 
 function OpenWorkspace() {
@@ -56,13 +53,13 @@ export default function Landing() {
     <div className="landing-progress" aria-hidden="true" />
     <section className="landing-hero">
       <div className="landing-copy">
-        <h1>Know which paddy goes in the dryer next.</h1>
-        <p>Line up arriving batches, check the chance of rain, and give your one dryer to the batch that needs it most.</p>
+        <h1>Dry the right batch next.</h1>
+        <p>Rank arriving paddy, check the rain, and give your dryer to the batch that needs it.</p>
         <div className="landing-actions">
           <OpenWorkspace />
           <a className="landing-secondary" href="#proof">See a real forecast</a>
         </div>
-        <p className="landing-trust">Rain checks through Telegraph · about 1¢ each · testnet</p>
+        <p className="landing-trust">Verified rain checks · ~1¢ each · testnet</p>
       </div>
       <div className="drying-floor-frame">
         <img className="drying-floor" src="/drying-floor.svg?v=2" alt="Illustration of a rice mill beside two outdoor paddy drying beds" width="620" height="430" />
@@ -93,19 +90,19 @@ export default function Landing() {
         </div>
       </div>
       <dl>
-        <div><dt>Dry weather</dt><dd>A batch that can dry outside can free up the dryer for another batch.</dd></div>
-        <div><dt>Rain likely</dt><dd>Keep the batch at the front of the queue for the dryer.</dd></div>
-        <div><dt>Not sure</dt><dd>Buy a rain-chance check through Telegraph, or look at the sky yourself before assigning.</dd></div>
+        <div><dt>Dry</dt><dd>Outdoor batches go outside. The dryer goes to the next one.</dd></div>
+        <div><dt>Rain</dt><dd>The wettest batch keeps the dryer.</dd></div>
+        <div><dt>Not sure</dt><dd>Buy a rain check first.</dd></div>
       </dl>
     </section>
     <section id="proof" className="landing-proof" aria-labelledby="proof-title">
       <div className="proof-copy">
-        <h2 id="proof-title">Every weather decision has a receipt.</h2>
-        <p>A weather app tells you what might happen. PaddyTurn also keeps why a batch was dried when it was, so a mill owner or cooperative can check a disputed decision later.</p>
+        <h2 id="proof-title">Every decision has a receipt.</h2>
+        <p>Know why each batch was dried, and prove it later.</p>
         <dl>{proofPoints.map(([title, description]) => <div key={title}><dt>{title}</dt><dd>{description}</dd></div>)}</dl>
       </div>
       <figure className="proof-sample">
-        <figcaption>Real check from the workspace · 22 Nov 2026</figcaption>
+        <figcaption>Real check · 22 Nov 2026</figcaption>
         <div className="evidence">
           <div className="evidence-head">
             <span className="badge ok">✓ Verified by Telegraph</span>
@@ -113,15 +110,15 @@ export default function Landing() {
           </div>
           <div className="evidence-main">
             <p className="evidence-figure"><strong>0%</strong><span>chance of rain · clear</span></p>
-            <p className="verdict dry">Below the 40% limit. TEST-01 dried outdoors, so the dryer went to TEST-02.</p>
+            <p className="verdict dry">Below 40%. TEST-01 dried outside; TEST-02 got the dryer.</p>
           </div>
           <dl className="evidence-facts">
             <div><dt>Place</dt><dd>Pathein, Myanmar</dd></div>
-            <div><dt>Weather source</dt><dd>Isobar Weather</dd></div>
+            <div><dt>Source</dt><dd>Isobar Weather</dd></div>
             <div><dt>Cost</dt><dd>0.01 test USDC</dd></div>
             <div><dt>Signal</dt><dd><code>0xd06ae8…e1ee46</code></dd></div>
           </dl>
-          <a className="evidence-link" href={proofUrl} target="_blank" rel="noreferrer">Check this forecast on Telegraph ↗</a>
+          <a className="evidence-link" href={proofUrl} target="_blank" rel="noreferrer">Check on Telegraph ↗</a>
         </div>
       </figure>
     </section>
@@ -142,7 +139,7 @@ export default function Landing() {
         <a href="https://github.com/thesithunyein/paddyturn/issues">Report an issue</a>
         <a href="https://telegraphprotocol.com/">Telegraph</a>
       </nav>
-      <p className="landing-note">Forecasts run on Telegraph’s testnet. Use physical moisture readings and your mill’s procedures for storage decisions.</p>
+      <p className="landing-note">Forecasts run on Telegraph testnet.</p>
     </footer>
   </main>
 }
