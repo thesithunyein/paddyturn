@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { rankBatches, schedule, type Batch, type Weather } from '../../lib/schedule'
+import { LanguageToggle, useT } from '../../lib/i18n'
 
 type Priority = 'moisture' | 'arrival'
 type Entry = Batch & { key: string }
@@ -18,7 +19,7 @@ type Forecast = { weather?: Weather; chance?: number; condition?: string; when?:
 
 const storageKey = 'paddyturn.workspace.v1'
 const initial: Workspace = { batches: [], history: [], priority: 'moisture', weather: 'unknown' }
-const weatherOptions = [{ id: 'unknown', label: 'Not sure' }, { id: 'dry', label: 'Dry weather' }, { id: 'rain', label: 'Rain likely' }] as const
+const weatherOptions = ['unknown', 'dry', 'rain'] as const
 
 function Icon({ name }: { name: 'plus' | 'queue' | 'weather' | 'edit' | 'check' | 'close' }) {
   const paths = {
@@ -34,19 +35,21 @@ const signalUrl = (hash: string) => `/proof/${hash}`
 const short = (value: string) => value.length > 18 ? `${value.slice(0, 8)}…${value.slice(-6)}` : value
 
 function CopyValue({ label, value }: { label: string; value: string }) {
+  const t = useT()
   const [copied, setCopied] = useState(false)
   async function copy() {
     try { await navigator.clipboard.writeText(value); setCopied(true); window.setTimeout(() => setCopied(false), 1500) } catch { /* clipboard unavailable */ }
   }
   return <div className="tech-row"><dt>{label}</dt><dd>
     <code title={value}>{short(value)}</code>
-    <button type="button" className="copy" onClick={copy} aria-label={`Copy ${label.toLowerCase()}`}>{copied ? 'Copied' : 'Copy'}</button>
+    <button type="button" className="copy" onClick={copy} aria-label={`${t('ev.copy')} ${label}`}>{copied ? t('ev.copied') : t('ev.copy')}</button>
   </dd></div>
 }
 
 function ForecastEvidence({ forecast }: { forecast: Forecast }) {
   const { evidence, peak, rain, windowStart, validUntil, threshold, chance, condition, when, location, weather,
     scope, dailyPeak, record, windowHours } = forecast
+  const t = useT()
   if (!evidence && chance === undefined && peak === undefined) return null
   const receipts = [...(evidence?.receipts ?? []), ...(evidence?.receiptHash ? [evidence.receiptHash] : [])]
   const verified = Boolean(evidence?.signalHash || receipts.length)
@@ -55,28 +58,28 @@ function ForecastEvidence({ forecast }: { forecast: Forecast }) {
   const usable = weather === 'dry' || weather === 'rain'
   return <div className="evidence">
     <div className="evidence-head">
-      <span className={verified ? 'badge ok' : 'badge warn'}>{verified ? <><Icon name="check" /> Verified by Telegraph</> : 'Not verified'}</span>
-      {record === 'verified' && <span className="badge ok">Public record checked</span>}
-      {record === 'pending' && <span className="badge net">Public record pending</span>}
-      <span className="badge net">Testnet</span>
+      <span className={verified ? 'badge ok' : 'badge warn'}>{verified ? t('ev.verified') : t('ev.notVerified')}</span>
+      {record === 'verified' && <span className="badge ok">{t('ev.recordChecked')}</span>}
+      {record === 'pending' && <span className="badge net">{t('ev.recordPending')}</span>}
+      <span className="badge net">{t('ev.testnet')}</span>
     </div>
     {chance !== undefined && <div className="evidence-main">
       <p className="evidence-figure"><strong>{chance}%</strong><span>{scope === 'window' && windowHours
-        ? `chance of rain, next ${windowHours} h` : 'chance of rain today'}{condition ? ` · ${condition}` : ''}</span></p>
+        ? t('ev.chanceWindow', { h: windowHours }) : t('ev.chanceDay')}{condition ? ` · ${condition}` : ''}</span></p>
       {usable && threshold !== undefined && <p className={weather === 'rain' ? 'verdict rain' : 'verdict dry'}>
-        {weather === 'rain' ? `${threshold}% or more. Keep it in the dryer queue.` : `Below ${threshold}%. Safe to dry outside.`}</p>}
+        {weather === 'rain' ? t('ev.rain', { t: threshold }) : t('ev.dry', { t: threshold })}</p>}
     </div>}
-    {chance === undefined && peak !== undefined && <p className="evidence-figure"><strong>{peak} mm</strong><span>peak hourly rain</span></p>}
+    {chance === undefined && peak !== undefined && <p className="evidence-figure"><strong>{peak} mm</strong><span>{t('ev.peakHourly')}</span></p>}
     <dl className="evidence-facts">
-      {location && <div><dt>Place</dt><dd>{location}</dd></div>}
-      {provider && <div><dt>Source</dt><dd>{provider}</dd></div>}
-      {typeof evidence?.cost === 'number' && <div><dt>Cost</dt><dd>{evidence.cost} test USDC</dd></div>}
-      {windowStart !== undefined && <div><dt>Checked</dt><dd>{new Date(windowStart).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</dd></div>}
+      {location && <div><dt>{t('ev.place')}</dt><dd>{location}</dd></div>}
+      {provider && <div><dt>{t('ev.source')}</dt><dd>{provider}</dd></div>}
+      {typeof evidence?.cost === 'number' && <div><dt>{t('ev.cost')}</dt><dd>{t('ev.costValue', { c: evidence.cost })}</dd></div>}
+      {windowStart !== undefined && <div><dt>{t('ev.checked')}</dt><dd>{new Date(windowStart).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</dd></div>}
     </dl>
     {evidence?.signalHash && <a className="evidence-link" href={signalUrl(evidence.signalHash)} target="_blank" rel="noreferrer">
-      Check on Telegraph ↗</a>}
+      {t('ev.check')}</a>}
     {evidence && <details className="evidence-tech">
-      <summary>Technical details</summary>
+      <summary>{t('ev.tech')}</summary>
       <dl>
         {evidence.intent && <div className="tech-row"><dt>Intent</dt><dd><code>{evidence.intent}</code></dd></div>}
         {evidence.minerId && <div className="tech-row"><dt>Miner</dt><dd>{evidence.minerId}</dd></div>}
@@ -100,6 +103,7 @@ function ForecastEvidence({ forecast }: { forecast: Forecast }) {
 }
 
 export default function Dashboard() {
+  const t = useT()
   const [workspace, setWorkspace] = useState(initial)
   const [ready, setReady] = useState(false)
   const [storageError, setStorageError] = useState(false)
@@ -139,7 +143,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (!forecast?.validUntil) return
     const timer = window.setTimeout(() => setForecast(previous => previous && {
-      ...previous, weather: 'unknown', reason: 'Forecast expired. Check current conditions.',
+      ...previous, weather: 'unknown', reason: t('fc.expired'),
     }), Math.max(0, forecast.validUntil - Date.now()))
     return () => window.clearTimeout(timer)
   }, [forecast?.validUntil])
@@ -149,7 +153,7 @@ export default function Dashboard() {
     if (checking || !baseline.needsWeather) return
     const form = new FormData(event.currentTarget)
     setChecking(true)
-    setForecast({ reason: 'Checking forecast…' })
+    setForecast({ reason: t('fc.inProgress') })
     try {
       const response = await fetch('/api/forecast', {
         method: 'POST',
@@ -160,9 +164,9 @@ export default function Dashboard() {
         }),
       })
       const result: Forecast = await response.json()
-      setForecast(response.ok ? result : { reason: result.reason || 'Forecast unavailable.' })
+      setForecast(response.ok ? result : { reason: result.reason || t('fc.unavailable') })
     } catch {
-      setForecast({ reason: 'Forecast unavailable. Check settlement before retrying.' })
+      setForecast({ reason: t('fc.failed') })
     } finally {
       setChecking(false)
     }
@@ -182,7 +186,7 @@ export default function Dashboard() {
     const form = new FormData(event.currentTarget)
     const id = String(form.get('id')).trim()
     if (!id || batches.some(batch => batch.key !== editing.key && batch.id.toLowerCase() === id.toLowerCase())) {
-      setError('Enter a unique batch ID.')
+      setError(t('dlg.unique'))
       return
     }
     const entry = { key: editing.key || crypto.randomUUID(), id, arrival: String(form.get('arrival')),
@@ -201,80 +205,80 @@ export default function Dashboard() {
   }
 
   return <main>
-    <header className="top"><Link href="/" className="brand home-link"><img src="/paddyturn.svg" alt="" width="42" height="42" /><strong>PaddyTurn</strong></Link><span>Mill workspace</span></header>
-    <div className="intro"><div><h1>Dryer queue</h1></div>
-      <button className="primary" disabled={!ready} onClick={() => { setTab('queue'); open() }}><Icon name="plus" /> Add batch</button></div>
-    {storageError && <p role="alert" className="error">Browser storage is unavailable. Changes may be lost when you leave.</p>}
+    <header className="top"><Link href="/" className="brand home-link"><img src="/paddyturn.svg" alt="" width="42" height="42" /><strong>PaddyTurn</strong></Link><div className="top-tools"><span>{t('app.title')}</span><LanguageToggle /></div></header>
+    <div className="intro"><div><h1>{t('app.queueTitle')}</h1></div>
+      <button className="primary" disabled={!ready} onClick={() => { setTab('queue'); open() }}><Icon name="plus" /> {t('app.add')}</button></div>
+    {storageError && <p role="alert" className="error">{t('app.storageError')}</p>}
     {assigned && <div className="assignment-notice" role="status">
-      <span><strong>{assigned}</strong> assigned to the dryer.</span>
-      <button onClick={() => setTab('history')}>View history</button>
+      <span>{t('app.assigned', { id: assigned })}</span>
+      <button onClick={() => setTab('history')}>{t('app.viewHistory')}</button>
     </div>}
     <div className={batches.length && tab === 'queue' ? 'grid queue-active' : 'grid'}>
       <section className="card queue">
-        <div className="tabs" aria-label="Workspace view">
-          <button aria-pressed={tab === 'queue'} onClick={() => setTab('queue')}>Queue <span>{batches.length}</span></button>
-          <button aria-pressed={tab === 'history'} onClick={() => setTab('history')}>History <span>{history.length}</span></button>
+        <div className="tabs" aria-label={t('app.tabs')}>
+          <button aria-pressed={tab === 'queue'} onClick={() => setTab('queue')}>{t('app.tab.queue')} <span>{batches.length}</span></button>
+          <button aria-pressed={tab === 'history'} onClick={() => setTab('history')}>{t('app.tab.history')} <span>{history.length}</span></button>
         </div>
         {tab === 'queue' ? <>
-          <div className="section-bar"><h2>Waiting batches</h2><label>Sort by <select disabled={!ready} value={priority} onChange={e => save({ ...workspace, priority: e.target.value as Priority })}><option value="moisture">Wettest first</option><option value="arrival">First to arrive</option></select></label></div>
-          {ordered.length ? <div className="scroll"><table><thead><tr><th>Batch</th><th>Arrival</th><th>Moisture</th><th>Outdoor</th><th><span className="sr">Actions</span></th></tr></thead>
-            <tbody>{ordered.map(batch => <tr key={batch.key}><th scope="row">{batch.id}</th><td>{batch.arrival}</td><td>{batch.moisture}%</td><td>{batch.outdoor ? 'Eligible' : '—'}</td><td><button className="icon-button" aria-label={'Edit ' + batch.id} onClick={() => open(batch)}><Icon name="edit" /></button></td></tr>)}</tbody></table></div>
-            : <div className="empty"><div className="tile"><Icon name="queue" /></div><h3>{ready ? 'No batches in queue' : 'Opening workspace…'}</h3><p>Add a batch when it arrives at the mill.</p><button disabled={!ready} onClick={() => open()}>Add first batch</button></div>}
-        </> : <><div className="section-bar"><h2>Dryer history</h2></div>{history.length ? <div className="scroll"><table><thead><tr><th>Batch</th><th>Moisture</th><th>Assigned at</th><th>Forecast</th></tr></thead><tbody>
-          {history.map(item => <tr key={item.batch.key}><th scope="row">{item.batch.id}</th><td>{item.batch.moisture}%</td><td>{new Date(item.at).toLocaleString()}</td><td>{item.forecast ? <details className="history-forecast"><summary>View evidence</summary><ForecastEvidence forecast={item.forecast} /></details> : "—"}</td></tr>)}
-          </tbody></table></div> : <div className="empty"><h3>No dryer assignments yet</h3><p>Assigned batches appear here.</p></div>}</>}
-        <footer>Saved in this browser</footer>
+          <div className="section-bar"><h2>{t('app.waiting')}</h2><label>{t('app.sortBy')} <select disabled={!ready} value={priority} onChange={e => save({ ...workspace, priority: e.target.value as Priority })}><option value="moisture">{t('app.sort.moisture')}</option><option value="arrival">{t('app.sort.arrival')}</option></select></label></div>
+          {ordered.length ? <div className="scroll"><table><thead><tr><th>{t('app.col.batch')}</th><th>{t('app.col.arrival')}</th><th>{t('app.col.moisture')}</th><th>{t('app.col.outdoor')}</th><th><span className="sr">{t('app.col.actions')}</span></th></tr></thead>
+            <tbody>{ordered.map(batch => <tr key={batch.key}><th scope="row">{batch.id}</th><td>{batch.arrival}</td><td>{batch.moisture}%</td><td>{batch.outdoor ? t('app.eligible') : '—'}</td><td><button className="icon-button" aria-label={t('app.edit', { id: batch.id })} onClick={() => open(batch)}><Icon name="edit" /></button></td></tr>)}</tbody></table></div>
+            : <div className="empty"><div className="tile"><Icon name="queue" /></div><h3>{ready ? t('app.empty') : t('app.opening')}</h3><p>{t('app.emptyHint')}</p><button disabled={!ready} onClick={() => open()}>{t('app.addFirst')}</button></div>}
+        </> : <><div className="section-bar"><h2>{t('app.historyTitle')}</h2></div>{history.length ? <div className="scroll"><table><thead><tr><th>{t('app.col.batch')}</th><th>{t('app.col.moisture')}</th><th>{t('app.col.assignedAt')}</th><th>{t('app.col.forecast')}</th></tr></thead><tbody>
+          {history.map(item => <tr key={item.batch.key}><th scope="row">{item.batch.id}</th><td>{item.batch.moisture}%</td><td>{new Date(item.at).toLocaleString()}</td><td>{item.forecast ? <details className="history-forecast"><summary>{t('app.viewEvidence')}</summary><ForecastEvidence forecast={item.forecast} /></details> : "—"}</td></tr>)}
+          </tbody></table></div> : <div className="empty"><h3>{t('app.noHistory')}</h3><p>{t('app.noHistoryHint')}</p></div>}</>}
+        <footer>{t('app.savedBrowser')}</footer>
       </section>
       <aside className="side">
         <section className="card next" aria-live="polite">
           <img className="mill" src="/mill.svg" alt="" />
-          <div className="next-copy"><h2>Next batch to dry</h2>
-            <p className="answer" key={next?.id ?? (decision.review ? 'review' : outdoor.length ? 'outdoor' : 'empty')}>{next?.id ?? (decision.review ? 'Check weather' : outdoor.length ? 'Dry outdoors' : '—')}</p>
-            <p>{!batches.length ? 'Add a batch to start.' : decision.review ? forecast?.reason || decision.baseline?.id + ' can dry outdoors. Check the weather before assigning it.' : outdoor.length ? 'Can dry outdoors: ' + outdoor.join(', ') : conditions === 'rain' && decision.baseline?.outdoor ? 'Rain keeps this batch in the dryer queue.' : priority === 'moisture' ? 'Highest moisture reading in the queue.' : 'First to arrive.'}</p>
-            {decision.review && <a className="conditions-link" href="#outdoor-conditions">Set the weather</a>}
-            {next && <dl className="next-facts"><div><dt>Moisture</dt><dd>{next.moisture}%</dd></div><div><dt>Arrival</dt><dd>{next.arrival}</dd></div></dl>}
-            {next && <button className="primary" onClick={() => record(next)}><Icon name="check" /> Assign to dryer</button>}
+          <div className="next-copy"><h2>{t('next.title')}</h2>
+            <p className="answer" key={next?.id ?? (decision.review ? 'review' : outdoor.length ? 'outdoor' : 'empty')}>{next?.id ?? (decision.review ? t('next.check') : outdoor.length ? t('next.outdoors') : '—')}</p>
+            <p>{!batches.length ? t('next.start') : decision.review ? forecast?.reason || t('next.review', { id: decision.baseline?.id ?? '' }) : outdoor.length ? t('next.outdoorList', { ids: outdoor.join(', ') }) : conditions === 'rain' && decision.baseline?.outdoor ? t('next.rainKeeps') : priority === 'moisture' ? t('next.wettest') : t('next.first')}</p>
+            {decision.review && <a className="conditions-link" href="#outdoor-conditions">{t('next.setWeather')}</a>}
+            {next && <dl className="next-facts"><div><dt>{t('next.moisture')}</dt><dd>{next.moisture}%</dd></div><div><dt>{t('next.arrival')}</dt><dd>{next.arrival}</dd></div></dl>}
+            {next && <button className="primary" onClick={() => record(next)}><Icon name="check" /> {t('next.assign')}</button>}
           </div>
         </section>
-        <section id="outdoor-conditions" className="card weather" tabIndex={-1}><h2><Icon name="weather" /> Weather for outdoor drying</h2>
-          <div className="weather-options">{weatherOptions.map(option => <button key={option.id} disabled={!ready || checking} aria-pressed={!forecast && weather === option.id} onClick={() => {
+        <section id="outdoor-conditions" className="card weather" tabIndex={-1}><h2><Icon name="weather" /> {t('wx.card')}</h2>
+          <div className="weather-options">{weatherOptions.map(option => <button key={option} disabled={!ready || checking} aria-pressed={!forecast && weather === option} onClick={() => {
             setForecast(undefined)
-            save({ ...workspace, weather: option.id })
-          }}>{option.label}</button>)}</div>
+            save({ ...workspace, weather: option })
+          }}>{t(`wx.opt.${option}`)}</button>)}</div>
         </section>
       </aside>
     </div>
     <details className="card forecast forecast-panel">
-      <summary>Optional forecast check</summary>
+      <summary>{t('fc.title')}</summary>
       <div className="forecast-panel-body">
         <form onSubmit={checkForecast}>
           <div className="fields">
-            <label>Mill location<input name="location" type="text" minLength={2} maxLength={120} defaultValue="Pathein, Myanmar" required /></label>
-            <label>Window (hours)<input name="hours" type="number" min="1" max="6" defaultValue="3" required /></label>
-            <label>Rain chance limit (%)<input name="threshold" type="number" min="1" max="100" step="1" defaultValue="40" required /></label>
+            <label>{t('fc.location')}<input name="location" type="text" minLength={2} maxLength={120} defaultValue="Pathein, Myanmar" required /></label>
+            <label>{t('fc.window')}<input name="hours" type="number" min="1" max="6" defaultValue="3" required /></label>
+            <label>{t('fc.limit')}<input name="threshold" type="number" min="1" max="100" step="1" defaultValue="40" required /></label>
           </div>
-          <p>Ask your mill manager for the forecast access code.</p>
-          <label>Forecast access code<input name="token" type="password" autoComplete="off" required /></label>
-          <button type="submit" disabled={!baseline.needsWeather || checking}>{checking ? 'Checking…' : 'Get forecast'}</button>
-          {!baseline.needsWeather && <p>The next batch does not need a forecast.</p>}
+          <p>{t('fc.ask')}</p>
+          <label>{t('fc.code')}<input name="token" type="password" autoComplete="off" required /></label>
+          <button type="submit" disabled={!baseline.needsWeather || checking}>{checking ? t('fc.checking') : t('fc.get')}</button>
+          {!baseline.needsWeather && <p>{t('fc.notNeeded')}</p>}
         </form>
         {forecast && <div className="forecast-result" aria-live="polite">
-          {(forecast.reason || conditions === 'unknown') && <p className="forecast-message">{forecast.reason || 'Forecast unavailable.'}</p>}
+          {(forecast.reason || conditions === 'unknown') && <p className="forecast-message">{forecast.reason || t('fc.unavailable')}</p>}
           <ForecastEvidence forecast={forecast} />
         </div>}
       </div>
     </details>
-    {editing && <dialog ref={dialog} aria-label={editing.key ? 'Edit batch' : 'Add batch'} onCancel={() => setEditing(null)}>
+    {editing && <dialog ref={dialog} aria-label={editing.key ? t('dlg.edit') : t('dlg.add')} onCancel={() => setEditing(null)}>
       <form onSubmit={submit}>
-        <div className="section-bar"><h2>{editing.key ? 'Edit batch' : 'Add batch'}</h2><button type="button" className="icon-button" aria-label="Close" onClick={() => setEditing(null)}><Icon name="close" /></button></div>
-        <label>Batch ID<input name="id" required autoFocus maxLength={32} defaultValue={editing.id} placeholder="e.g. PT-024" /></label>
-        <div className="fields"><label>Arrival<input name="arrival" type="time" required defaultValue={editing.arrival} /></label>
-          <label>Moisture reading (%)<input name="moisture" type="number" min="0" max="100" step="0.1" required defaultValue={Number.isFinite(editing.moisture) ? editing.moisture : ''} /></label></div>
-        <label className="check"><input type="checkbox" name="outdoor" defaultChecked={editing.outdoor} /> This batch can dry outdoors</label>
+        <div className="section-bar"><h2>{editing.key ? t('dlg.edit') : t('dlg.add')}</h2><button type="button" className="icon-button" aria-label={t('dlg.close')} onClick={() => setEditing(null)}><Icon name="close" /></button></div>
+        <label>{t('dlg.id')}<input name="id" required autoFocus maxLength={32} defaultValue={editing.id} placeholder={t('dlg.idHint')} /></label>
+        <div className="fields"><label>{t('dlg.arrival')}<input name="arrival" type="time" required defaultValue={editing.arrival} /></label>
+          <label>{t('dlg.moisture')}<input name="moisture" type="number" min="0" max="100" step="0.1" required defaultValue={Number.isFinite(editing.moisture) ? editing.moisture : ''} /></label></div>
+        <label className="check"><input type="checkbox" name="outdoor" defaultChecked={editing.outdoor} /> {t('dlg.outdoor')}</label>
         {error && <p role="alert" className="error">{error}</p>}
         <div className="actions">{editing.key && <button type="button" className="remove" onClick={() => {
           save({ ...workspace, batches: batches.filter(batch => batch.key !== editing.key) }); setEditing(null)
-        }}>Remove batch</button>}<button className="primary" type="submit">Save batch</button></div>
+        }}>{t('dlg.remove')}</button>}<button className="primary" type="submit">{t('dlg.save')}</button></div>
       </form>
     </dialog>}
   </main>
