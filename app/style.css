@@ -156,4 +156,36 @@ input, select { max-width: 100% }
 }
 
 .history-forecast summary { cursor: pointer; color: var(--green); font-weight: 650 }
-.forecast-evidence { max-width: 34ch; white-space: normal; overflow-wrap: anywhere; line-height: 1.5 }
+
+/* Forecast evidence card */
+.forecast-message { margin: 0 0 12px; color: var(--muted) }
+.evidence { display: grid; gap: 14px; max-width: 30rem; padding: 18px; border: 1px solid var(--line); border-radius: 16px; background: #fff; white-space: normal; line-height: 1.45 }
+.evidence-head { display: flex; flex-wrap: wrap; gap: 8px }
+.badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; font-size: .76rem; font-weight: 700 }
+.badge svg { width: 15px; height: 15px }
+.badge.ok { background: #e3efe2; color: var(--green) }
+.badge.warn { background: #f7ead0; color: #7a5413 }
+.badge.net { background: #f1efe6; color: var(--muted) }
+.evidence-main { display: grid; gap: 8px }
+.evidence-figure { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; margin: 0 }
+.evidence-figure strong { font-family: Georgia, serif; font-weight: 500; font-size: 2.6rem; line-height: 1; letter-spacing: -.04em; color: var(--green) }
+.evidence-figure span { color: var(--muted); font-size: .9rem }
+.verdict { margin: 0; padding: 9px 12px; border-radius: 10px; font-weight: 650; font-size: .86rem }
+.verdict.dry { background: #e3efe2; color: var(--green) }
+.verdict.rain { background: #e6edf5; color: #26425e }
+.evidence-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 16px; margin: 0 }
+.evidence-facts dt, .evidence-tech dt { color: var(--muted); font-size: .74rem; text-transform: uppercase; letter-spacing: .06em; font-weight: 700 }
+.evidence-facts dd { margin: 2px 0 0; font-weight: 600; overflow-wrap: anywhere }
+.evidence-link { justify-self: start; padding: 9px 14px; border-radius: 9px; background: var(--green); color: #fffaf0; font-weight: 650; font-size: .86rem; text-decoration: none }
+.evidence-link:hover { filter: brightness(1.1) }
+.evidence-tech { border-top: 1px solid var(--line); padding-top: 10px; font-size: .82rem }
+.evidence-tech summary { cursor: pointer; color: var(--muted); font-weight: 650 }
+.evidence-tech dl { display: grid; gap: 8px; margin: 10px 0 0 }
+.tech-row { display: grid; grid-template-columns: 8.5rem minmax(0, 1fr); gap: 10px; align-items: center }
+.tech-row dd { margin: 0; display: flex; align-items: center; gap: 8px; min-width: 0; overflow-wrap: anywhere }
+.tech-row code { font-size: .8rem }
+.copy { padding: 3px 9px; font-size: .74rem; border-radius: 7px }
+@media (max-width: 520px) {
+  .evidence-facts { grid-template-columns: 1fr }
+  .tech-row { grid-template-columns: 1fr; gap: 2px }
+}

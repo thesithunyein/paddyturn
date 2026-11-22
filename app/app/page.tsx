@@ -29,31 +29,67 @@ function Icon({ name }: { name: 'plus' | 'queue' | 'weather' | 'edit' | 'check' 
   return <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name]} /></svg>
 }
 
+const signalUrl = (hash: string) => `https://devnode.telegraphprotocol.com/engine/v1/signal/${hash}`
+const short = (value: string) => value.length > 18 ? `${value.slice(0, 8)}…${value.slice(-6)}` : value
+
+function CopyValue({ label, value }: { label: string; value: string }) {
+  const [copied, setCopied] = useState(false)
+  async function copy() {
+    try { await navigator.clipboard.writeText(value); setCopied(true); window.setTimeout(() => setCopied(false), 1500) } catch { /* clipboard unavailable */ }
+  }
+  return <div className="tech-row"><dt>{label}</dt><dd>
+    <code title={value}>{short(value)}</code>
+    <button type="button" className="copy" onClick={copy} aria-label={`Copy ${label.toLowerCase()}`}>{copied ? 'Copied' : 'Copy'}</button>
+  </dd></div>
+}
+
 function ForecastEvidence({ forecast }: { forecast: Forecast }) {
-  const { evidence, peak, rain, windowStart, validUntil, threshold, chance, condition, when, location } = forecast
-  const unit = chance !== undefined || forecast.evidence?.billing === 'escrow' ? '%' : ' mm/h'
-  return <div className="forecast-evidence">
-    {windowStart !== undefined && validUntil !== undefined &&
-      <p>Forecast window: {new Date(windowStart).toLocaleString()} to {new Date(validUntil).toLocaleString()}</p>}
-    {location && <p>Location: {location}</p>}
-    {when && <p>Provider forecast period starts: {when}</p>}
-    {chance !== undefined && <p>Peak rain chance in the provider’s period: {chance}%{condition ? ` · ${condition}` : ''}</p>}
-    {threshold !== undefined && <p>Rain limit: {threshold}{unit}</p>}
-    {peak !== undefined && <p>Peak hourly rain: {peak} mm</p>}
-    {!!rain?.length && <p>Hourly rain: {rain.join(', ')} mm</p>}
-    {evidence && <>
-      <p>{evidence.billing ? 'Billing: Anjoman testnet escrow' : 'Network: Ethereum Sepolia (testnet)'}</p>
-      {evidence.jobId && <p>Job ID: <code>{evidence.jobId}</code></p>}
-      {evidence.intent && <p>Intent: <code>{evidence.intent}</code></p>}
-      {(evidence.provider || evidence.miner || evidence.minerId) && <p>Provider: {evidence.provider || evidence.miner}{evidence.minerId ? ` (miner ${evidence.minerId})` : ''}</p>}
-      {evidence.fulfillment && <p>Fulfillment: {evidence.fulfillment}</p>}
-      {evidence.receipts?.map(receipt => <p key={receipt}>Receipt: <code>{receipt}</code></p>)}
-      {typeof evidence.cost === 'number' && <p>Cost: {evidence.cost} test USDC</p>}
-      {evidence.receiptHash && <p>Receipt: <code>{evidence.receiptHash}</code></p>}
-      {evidence.signalHash && <p>Signal: <code>{evidence.signalHash}</code></p>}
+  const { evidence, peak, rain, windowStart, validUntil, threshold, chance, condition, when, location, weather } = forecast
+  if (!evidence && chance === undefined && peak === undefined) return null
+  const receipts = [...(evidence?.receipts ?? []), ...(evidence?.receiptHash ? [evidence.receiptHash] : [])]
+  const verified = Boolean(evidence?.signalHash || receipts.length)
+  const unit = chance !== undefined || evidence?.billing === 'escrow' ? '%' : ' mm/h'
+  const provider = evidence?.provider || evidence?.miner
+  const usable = weather === 'dry' || weather === 'rain'
+  return <div className="evidence">
+    <div className="evidence-head">
+      <span className={verified ? 'badge ok' : 'badge warn'}>{verified ? <><Icon name="check" /> Verified by Telegraph</> : 'Not verified'}</span>
+      <span className="badge net">Testnet</span>
+    </div>
+    {chance !== undefined && <div className="evidence-main">
+      <p className="evidence-figure"><strong>{chance}%</strong><span>chance of rain{condition ? ` · ${condition}` : ''}</span></p>
+      {usable && threshold !== undefined && <p className={weather === 'rain' ? 'verdict rain' : 'verdict dry'}>
+        {weather === 'rain' ? `At or above your ${threshold}% limit. Keep outdoor batches in the dryer queue.`
+          : `Below your ${threshold}% limit. Outdoor drying is safe.`}</p>}
+    </div>}
+    {chance === undefined && peak !== undefined && <p className="evidence-figure"><strong>{peak} mm</strong><span>peak hourly rain</span></p>}
+    <dl className="evidence-facts">
+      {location && <div><dt>Place</dt><dd>{location}</dd></div>}
+      {provider && <div><dt>Weather source</dt><dd>{provider}</dd></div>}
+      {typeof evidence?.cost === 'number' && <div><dt>Cost</dt><dd>{evidence.cost} test USDC</dd></div>}
+      {windowStart !== undefined && <div><dt>Checked</dt><dd>{new Date(windowStart).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</dd></div>}
+    </dl>
+    {evidence?.signalHash && <a className="evidence-link" href={signalUrl(evidence.signalHash)} target="_blank" rel="noreferrer">
+      Check this forecast on Telegraph ↗</a>}
+    {evidence && <details className="evidence-tech">
+      <summary>Technical details</summary>
+      <dl>
+        {evidence.intent && <div className="tech-row"><dt>Intent</dt><dd><code>{evidence.intent}</code></dd></div>}
+        {evidence.minerId && <div className="tech-row"><dt>Miner</dt><dd>{evidence.minerId}</dd></div>}
+        {receipts.map(receipt => <CopyValue key={receipt} label="Receipt" value={receipt} />)}
+        {evidence.signalHash && <CopyValue label="Signal" value={evidence.signalHash} />}
+        {evidence.jobId && <CopyValue label="Job ID" value={evidence.jobId} />}
+        {evidence.fulfillment && <div className="tech-row"><dt>Fulfillment</dt><dd>{evidence.fulfillment}</dd></div>}
+        <div className="tech-row"><dt>Billing</dt><dd>{evidence.billing ? 'Anjoman testnet escrow' : 'Ethereum Sepolia (testnet)'}</dd></div>
+        {when && <div className="tech-row"><dt>Provider period</dt><dd>from {when}</dd></div>}
+        {windowStart !== undefined && validUntil !== undefined && <div className="tech-row"><dt>Requested window</dt>
+          <dd>{new Date(windowStart).toLocaleTimeString([], { timeStyle: 'short' })}–{new Date(validUntil).toLocaleTimeString([], { timeStyle: 'short' })}</dd></div>}
+        {threshold !== undefined && <div className="tech-row"><dt>Rain limit</dt><dd>{threshold}{unit}</dd></div>}
+        {!!rain?.length && <div className="tech-row"><dt>Hourly rain</dt><dd>{rain.join(', ')} mm</dd></div>}
+      </dl>
       {/^(0x)[0-9a-f]{64}$/i.test(evidence.transaction || '') &&
-        <a href={`https://sepolia.etherscan.io/tx/${evidence.transaction}`} target="_blank" rel="noreferrer">View Sepolia settlement</a>}
-    </>}
+        <a href={`https://sepolia.etherscan.io/tx/${evidence.transaction}`} target="_blank" rel="noreferrer">View Sepolia settlement ↗</a>}
+    </details>}
   </div>
 }
 
@@ -217,8 +253,7 @@ export default function Dashboard() {
           {!baseline.needsWeather && <p>The next batch does not need a forecast.</p>}
         </form>
         {forecast && <div className="forecast-result" aria-live="polite">
-          <p>{forecast.reason || (conditions === 'rain' ? 'Rain chance at or above your limit. Keep outdoor batches in the dryer queue.' : conditions === 'dry' ? 'Rain chance below your limit. Outdoor drying is an option.' : 'Forecast unavailable.')}</p>
-          <p className="forecast-note">Bought through Telegraph on testnet. Each check costs at most the configured request budget.</p>
+          {(forecast.reason || conditions === 'unknown') && <p className="forecast-message">{forecast.reason || 'Forecast unavailable.'}</p>}
           <ForecastEvidence forecast={forecast} />
         </div>}
       </div>
