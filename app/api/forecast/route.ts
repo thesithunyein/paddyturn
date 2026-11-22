@@ -1,6 +1,6 @@
 import { timingSafeEqual } from 'node:crypto'
 import { createBudget } from '../../../lib/budget'
-import { requestBudgetUsd, requestForecast } from '../../../lib/engine'
+import { requestBudgetUsd, requestForecast, routedCapUsd } from '../../../lib/engine'
 import { validLocation } from '../../../lib/forecast'
 
 export const maxDuration = 60
@@ -25,13 +25,14 @@ export async function POST(request: Request) {
     return Response.json({ reason: 'Check the location, drying window and rain chance limit.' }, { status: 400 })
   }
   const requestBudget = requestBudgetUsd()
-  if (!budget.reserve(requestBudget)) {
+  // Anjoman may spend up to its routed cap, so reserve that, then settle.
+  if (!budget.reserve(routedCapUsd)) {
     return Response.json({ reason: 'Today’s forecast budget is used up. Enter outdoor conditions manually.' }, { status: 429 })
   }
   const windowStart = Date.now()
   try {
     const forecast = await requestForecast(location, hours as number, threshold as number, requestBudget)
-    budget.settle(requestBudget, forecast.evidence.cost)
+    budget.settle(routedCapUsd, forecast.evidence.cost)
     return Response.json({ ...forecast, windowStart, threshold, validUntil: windowStart + (hours as number) * 3_600_000 })
   } catch (error) {
     // Engine errors before a paid call are documented as not charged; a
