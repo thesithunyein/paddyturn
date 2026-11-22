@@ -218,10 +218,14 @@ input, select { max-width: 100% }
 :lang(my) body, :lang(my) h1, :lang(my) h2, :lang(my) h3, :lang(my) button, :lang(my) input, :lang(my) select,
 [lang=my] { font-family: "Noto Sans Myanmar", "Myanmar Text", "Pyidaungsu", Padauk, "Myanmar Sangam MN", system-ui, sans-serif }
 :lang(my) body { line-height: 1.75 }
-:lang(my) h1 { line-height: 1.35; letter-spacing: 0 }
-:lang(my) h2, :lang(my) h3 { line-height: 1.5; letter-spacing: 0 }
-:lang(my) .landing-hero h1 { max-width: 16ch; font-size: clamp(2rem, 4vw, 3.3rem) }
-:lang(my) .next .answer { font-size: clamp(1.8rem, 4vw, 2.6rem); line-height: 1.4 }
+/* Myanmar glyphs are much taller than Latin at the same size, so scale headings down. */
+:lang(my) h1 { font-size: clamp(1.6rem, 3.2vw, 2.4rem); line-height: 1.45; letter-spacing: 0 }
+:lang(my) h2, :lang(my) h3 { line-height: 1.55; letter-spacing: 0 }
+:lang(my) .landing-hero h1 { max-width: 18ch; font-size: clamp(1.7rem, 3.4vw, 2.6rem) }
+:lang(my) .landing-steps h2, :lang(my) .landing-faq h2, :lang(my) .landing-weather h2, :lang(my) .landing-proof h2 { font-size: clamp(1.15rem, 2.2vw, 1.5rem) }
+:lang(my) .next .answer { font-size: clamp(1.4rem, 2.8vw, 1.9rem); line-height: 1.5 }
+:lang(my) .evidence-figure strong { font-size: 2.2rem }
+:lang(my) .card h2, :lang(my) .tabs button, :lang(my) th, :lang(my) .primary { font-size: .92em }
 
 /* Mill workspace sync */
 .sync { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px }
