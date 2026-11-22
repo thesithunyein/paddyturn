@@ -1,25 +1,41 @@
 import { timingSafeEqual } from 'node:crypto'
-import { requestAnjomanForecast } from '../../../lib/anjoman'
+import { createBudget } from '../../../lib/budget'
+import { requestBudgetUsd, requestForecast } from '../../../lib/engine'
+import { validLocation } from '../../../lib/forecast'
 
-export const maxDuration = 120
+export const maxDuration = 60
+
+const dailyLimit = Number(process.env.TELEGRAPH_DAILY_BUDGET_USD || '1')
+const budget = createBudget(Number.isFinite(dailyLimit) && dailyLimit > 0 && dailyLimit <= 20 ? dailyLimit : 1)
+
+function authorized(request: Request) {
+  const expected = process.env.LOCAL_FORECAST_TOKEN || ''
+  const provided = request.headers.get('x-paddyturn-token') || ''
+  return Buffer.byteLength(expected) >= 24 && Buffer.byteLength(expected) === Buffer.byteLength(provided)
+    && timingSafeEqual(Buffer.from(expected), Buffer.from(provided))
+}
 
 export async function POST(request: Request) {
-  const expected = process.env.LOCAL_FORECAST_TOKEN
-  const provided = request.headers.get('x-paddyturn-token') || ''
-  if (!expected || Buffer.byteLength(expected) < 24 || Buffer.byteLength(expected) !== Buffer.byteLength(provided)
-    || !timingSafeEqual(Buffer.from(expected), Buffer.from(provided))) {
-    return Response.json({ reason: 'Live mode requires the local access token.' }, { status: 403 })
+  if (!authorized(request)) return Response.json({ reason: 'The forecast access code is not valid.' }, { status: 403 })
+  let body: { location?: unknown; hours?: unknown; threshold?: unknown }
+  try { body = await request.json() } catch { return Response.json({ reason: 'Invalid request.' }, { status: 400 }) }
+  const { location, hours, threshold } = body
+  if (!validLocation(location) || !Number.isInteger(hours) || (hours as number) < 1 || (hours as number) > 6
+    || !Number.isInteger(threshold) || (threshold as number) < 1 || (threshold as number) > 100) {
+    return Response.json({ reason: 'Check the location, drying window and rain chance limit.' }, { status: 400 })
   }
+  const requestBudget = requestBudgetUsd()
+  if (!budget.reserve(requestBudget)) {
+    return Response.json({ reason: 'Today’s forecast budget is used up. Enter outdoor conditions manually.' }, { status: 429 })
+  }
+  const windowStart = Date.now()
   try {
-    const { latitude, longitude, hours, threshold } = await request.json()
-    if (!Number.isFinite(latitude) || Math.abs(latitude) > 90 || !Number.isFinite(longitude) || Math.abs(longitude) > 180
-      || !Number.isInteger(hours) || hours < 1 || hours > 6 || !Number.isFinite(threshold) || threshold <= 0 || threshold > 10) {
-      return Response.json({ reason: 'Check the coordinates and drying-window settings.' }, { status: 400 })
-    }
-    const start = Math.floor(Date.now() / 3600000) * 3600000
-    const forecast = await requestAnjomanForecast(latitude, longitude, start, hours, threshold)
-    return Response.json({ ...forecast, windowStart: start, threshold, validUntil: start + hours * 3_600_000 })
+    const forecast = await requestForecast(location, hours as number, threshold as number, requestBudget)
+    budget.settle(requestBudget, forecast.evidence.cost)
+    return Response.json({ ...forecast, windowStart, threshold, validUntil: windowStart + (hours as number) * 3_600_000 })
   } catch (error) {
+    // Engine errors before a paid call are documented as not charged; a
+    // timeout may still have been charged, so the reservation is kept.
     const reason = error instanceof Error ? error.message : 'Forecast request failed.'
     return Response.json({ reason }, { status: 503 })
   }

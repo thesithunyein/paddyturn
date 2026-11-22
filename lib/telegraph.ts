@@ -1,4 +1,4 @@
-import { classifyForecast, classifyWindow } from './forecast.ts'
+import { classifyRainChance } from './forecast.ts'
 
 export const node = 'https://devnode.telegraphprotocol.com'
 // This is the live, ranked testnet weather-forecast intent. Mission pages use
@@ -34,12 +34,12 @@ async function resolveMiner() {
   return candidates[0].id
 }
 
-async function forecastRequest(latitude: number, longitude: number, hours: number) {
+async function forecastRequest(location: string, hours: number) {
   const miner = await resolveMiner()
   return { miner, url: node + '/engine/v1/ask/' + miner, options: {
     method: 'POST', redirect: 'error' as const, signal: AbortSignal.timeout(25000),
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ intent, params: { location: `${latitude},${longitude}`, window_hours: hours } }),
+    body: JSON.stringify({ intent, params: { location, window_hours: hours } }),
   } }
 }
 
@@ -55,14 +55,14 @@ export function readSepoliaQuote(header: string | null) {
   return { network, asset, amountMicroUsdc: option.amount }
 }
 
-export async function quoteForecast(latitude: number, longitude: number, hours: number) {
-  const { miner, url, options } = await forecastRequest(latitude, longitude, hours)
+export async function quoteForecast(location: string, hours: number) {
+  const { miner, url, options } = await forecastRequest(location, hours)
   const response = await fetch(url, options)
   if (response.status !== 402) throw new Error(`Expected a Telegraph quote, received HTTP ${response.status}.`)
   return { status: 'quote-only', intent, miner, ...readSepoliaQuote(response.headers.get('payment-required')) }
 }
 
-export async function purchase(latitude: number, longitude: number, start: number, hours: number, threshold: number) {
+export async function purchase(location: string, hours: number, limitPct: number) {
   const key = process.env.SEPOLIA_PRIVATE_KEY
   if (!key || !/^0x[0-9a-fA-F]{64}$/.test(key)) throw new Error('Configure a dedicated Sepolia test wallet.')
   const cap = Number(process.env.MAX_TEST_MICRO_USDC || '10000')
@@ -80,7 +80,7 @@ export async function purchase(latitude: number, longitude: number, start: numbe
     spendControls: { allowedAssets: [{ network, asset, maxAmountPerPayment: String(cap) }] },
   })
 
-  const { miner, url, options } = await forecastRequest(latitude, longitude, hours)
+  const { miner, url, options } = await forecastRequest(location, hours)
   attempted = true
   const response = await client(url, options)
   if (!response.ok) throw new Error(`Telegraph returned HTTP ${response.status}. Check settlement before retrying.`)
@@ -91,15 +91,13 @@ export async function purchase(latitude: number, longitude: number, start: numbe
   const evidence = { intent, miner, provider: answer.miner_name, cost: answer.cost_usd,
     signalHash: answer.signal_hash, receiptHash: receipt.receipt_hash, transaction: receipt.tx_hash }
   try {
-    if (answer.error || answer.result?.error || Object.values(answer.field_status || {}).some(status => status !== 'ok')) {
-      throw new Error('Telegraph returned unusable forecast fields.')
-    }
-    const forecast = Array.isArray(answer.result?.hourly)
-      ? classifyForecast(answer.result.hourly, start, hours, threshold)
-      : classifyWindow(answer.result, start, hours, threshold)
+    // Only the rain chance decides the turn; classifyRainChance checks its
+    // field status. Optional descriptive fields may be missing.
+    if (answer.error || answer.result?.error) throw new Error('Telegraph returned an error result.')
+    const forecast = classifyRainChance(answer.result, answer.field_status, limitPct)
     return { ...forecast, evidence }
   } catch (error) {
-    return { weather: 'unknown' as const, rain: [], evidence,
+    return { weather: 'unknown' as const, evidence,
       reason: error instanceof Error ? error.message : 'Unusable forecast.' }
   }
 }

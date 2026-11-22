@@ -8,9 +8,12 @@ type Priority = 'moisture' | 'arrival'
 type Entry = Batch & { key: string }
 type History = { batch: Entry; at: string; forecast?: Forecast }
 type Workspace = { batches: Entry[]; history: History[]; priority: Priority; weather: Weather }
-type Forecast = { weather?: Weather; rain?: number[]; peak?: number; validUntil?: number; reason?: string;
-  windowStart?: number; threshold?: number;
-  evidence?: { billing?: 'anjoman'; jobId?: string; receiptHash?: string; transaction?: string; provider?: string; intent?: string; miner?: string; cost?: number; signalHash?: string } }
+// `rain`, `peak` and `jobId` are kept so assignments recorded by earlier
+// versions still display their evidence.
+type Forecast = { weather?: Weather; chance?: number; condition?: string; when?: string; location?: string
+  rain?: number[]; peak?: number; validUntil?: number; reason?: string; windowStart?: number; threshold?: number
+  evidence?: { billing?: 'escrow' | 'anjoman'; jobId?: string; receiptHash?: string; receipts?: string[]; transaction?: string
+    provider?: string; minerId?: string; intent?: string; miner?: string; cost?: number; signalHash?: string; fulfillment?: string } }
 
 const storageKey = 'paddyturn.workspace.v1'
 const initial: Workspace = { batches: [], history: [], priority: 'moisture', weather: 'unknown' }
@@ -27,19 +30,24 @@ function Icon({ name }: { name: 'plus' | 'queue' | 'weather' | 'edit' | 'check' 
 }
 
 function ForecastEvidence({ forecast }: { forecast: Forecast }) {
-  const { evidence, peak, rain, windowStart, validUntil, threshold } = forecast
+  const { evidence, peak, rain, windowStart, validUntil, threshold, chance, condition, when, location } = forecast
+  const unit = chance !== undefined || forecast.evidence?.billing === 'escrow' ? '%' : ' mm/h'
   return <div className="forecast-evidence">
     {windowStart !== undefined && validUntil !== undefined &&
       <p>Forecast window: {new Date(windowStart).toLocaleString()} to {new Date(validUntil).toLocaleString()}</p>}
-    {threshold !== undefined && <p>Rain threshold: {threshold} mm/h</p>}
+    {location && <p>Location: {location}{when ? ` · ${when}` : ''}</p>}
+    {chance !== undefined && <p>Peak rain chance: {chance}%{condition ? ` · ${condition}` : ''}</p>}
+    {threshold !== undefined && <p>Rain limit: {threshold}{unit}</p>}
     {peak !== undefined && <p>Peak hourly rain: {peak} mm</p>}
     {!!rain?.length && <p>Hourly rain: {rain.join(', ')} mm</p>}
     {evidence && <>
-      <p>{evidence.billing === 'anjoman' ? 'Billing: Anjoman escrow' : 'Network: Ethereum Sepolia'}</p>
+      <p>{evidence.billing ? 'Billing: Anjoman testnet escrow' : 'Network: Ethereum Sepolia (testnet)'}</p>
       {evidence.jobId && <p>Job ID: <code>{evidence.jobId}</code></p>}
       {evidence.intent && <p>Intent: <code>{evidence.intent}</code></p>}
-      {(evidence.provider || evidence.miner) && <p>Provider: {evidence.provider || evidence.miner}</p>}
-      {typeof evidence.cost === 'number' && <p>Cost: {evidence.cost} USDC{evidence.billing === 'anjoman' ? '' : ' (testnet)'}</p>}
+      {(evidence.provider || evidence.miner || evidence.minerId) && <p>Provider: {evidence.provider || evidence.miner}{evidence.minerId ? ` (miner ${evidence.minerId})` : ''}</p>}
+      {evidence.fulfillment && <p>Fulfillment: {evidence.fulfillment}</p>}
+      {evidence.receipts?.map(receipt => <p key={receipt}>Receipt: <code>{receipt}</code></p>)}
+      {typeof evidence.cost === 'number' && <p>Cost: {evidence.cost} test USDC</p>}
       {evidence.receiptHash && <p>Receipt: <code>{evidence.receiptHash}</code></p>}
       {evidence.signalHash && <p>Signal: <code>{evidence.signalHash}</code></p>}
       {/^(0x)[0-9a-f]{64}$/i.test(evidence.transaction || '') &&
@@ -104,7 +112,7 @@ export default function Dashboard() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-paddyturn-token': String(form.get('token')) },
         body: JSON.stringify({
-          latitude: Number(form.get('latitude')), longitude: Number(form.get('longitude')),
+          location: String(form.get('location') || '').trim(),
           hours: Number(form.get('hours')), threshold: Number(form.get('threshold')),
         }),
       })
@@ -142,7 +150,8 @@ export default function Dashboard() {
 
   function record(batch: Entry) {
     if (baseline.needsWeather && forecast && (!forecast.validUntil || forecast.validUntil <= Date.now())) return
-    const usedForecast = baseline.needsWeather && (forecast?.evidence?.receiptHash || forecast?.evidence?.jobId) && conditions !== 'unknown' ? forecast : undefined
+    const proof = forecast?.evidence?.signalHash || forecast?.evidence?.receiptHash || forecast?.evidence?.receipts?.length
+    const usedForecast = baseline.needsWeather && proof && conditions !== 'unknown' ? forecast : undefined
     save({ ...workspace, batches: batches.filter(item => item.key !== batch.key),
       history: [{ batch, at: new Date().toISOString(), forecast: usedForecast }, ...history] })
     setAssigned(batch.id)
@@ -197,10 +206,9 @@ export default function Dashboard() {
       <div className="forecast-panel-body">
         <form onSubmit={checkForecast}>
           <div className="fields">
-            <label>Latitude<input name="latitude" type="number" min="-90" max="90" step="any" defaultValue="16.78" required /></label>
-            <label>Longitude<input name="longitude" type="number" min="-180" max="180" step="any" defaultValue="94.73" required /></label>
+            <label>Mill location<input name="location" type="text" minLength={2} maxLength={120} defaultValue="Pathein, Myanmar" required /></label>
             <label>Window (hours)<input name="hours" type="number" min="1" max="6" defaultValue="3" required /></label>
-            <label>Rain limit (mm/h)<input name="threshold" type="number" min="0.01" max="10" step="0.01" defaultValue="0.2" required /></label>
+            <label>Rain chance limit (%)<input name="threshold" type="number" min="1" max="100" step="1" defaultValue="40" required /></label>
           </div>
           <p>Ask your mill manager for the forecast access code.</p>
           <label>Forecast access code<input name="token" type="password" autoComplete="off" required /></label>
@@ -208,7 +216,8 @@ export default function Dashboard() {
           {!baseline.needsWeather && <p>The next batch does not need a forecast.</p>}
         </form>
         {forecast && <div className="forecast-result" aria-live="polite">
-          <p>{forecast.reason || (conditions === 'rain' ? 'Rain limit reached.' : conditions === 'dry' ? 'Below the rain limit.' : 'Forecast unavailable.')}</p>
+          <p>{forecast.reason || (conditions === 'rain' ? 'Rain chance at or above your limit. Keep outdoor batches in the dryer queue.' : conditions === 'dry' ? 'Rain chance below your limit. Outdoor drying is an option.' : 'Forecast unavailable.')}</p>
+          <p className="forecast-note">Bought through Telegraph on testnet. Each check costs at most the configured request budget.</p>
           <ForecastEvidence forecast={forecast} />
         </div>}
       </div>

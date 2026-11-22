@@ -1,35 +1,32 @@
-export function classifyForecast(hours: unknown, start: number, count: number, threshold: number) {
-  if (!Array.isArray(hours)) throw new Error('Missing hourly precipitation data.')
-  const expected = Array.from({ length: count }, (_, i) => start + i * 3600000)
-  const rain = expected.map(time => {
-    const matches = hours.filter(hour => hour && typeof hour.time === 'string'
-      && /(?:Z|[+-]\d\d:\d\d)$/i.test(hour.time) && Date.parse(hour.time) === time)
-    const value = matches[0]?.precipitation_mm
-    if (matches.length !== 1 || typeof value !== 'number' || !Number.isFinite(value) || value < 0) {
-      throw new Error('Forecast lacks a complete, unambiguous drying window.')
-    }
-    return value
-  })
-  return { weather: rain.some(value => value >= threshold) ? 'rain' as const : 'dry' as const, rain }
+// Telegraph's WEATHER_FORECAST_GENERAL intent (response format v4) returns
+// `location`, `when`, `temp_max_c`, `temp_min_c`, `precipitation_probability_pct`
+// (peak chance of precipitation over the window) and `condition`. It does not
+// return hourly rainfall amounts, so the drying decision is made on the peak
+// rain chance against an operator-set limit.
+
+type FieldStatus = Record<string, unknown> | undefined
+
+export type RainCheck = { weather: 'dry' | 'rain'; chance: number; condition?: string; when?: string; location?: string }
+
+export function classifyRainChance(result: unknown, fieldStatus: FieldStatus, limitPct: number): RainCheck {
+  if (!Number.isFinite(limitPct) || limitPct < 1 || limitPct > 100) throw new Error('Rain chance limit must be 1 to 100%.')
+  if (!result || typeof result !== 'object') throw new Error('Forecast returned no structured result.')
+  const data = result as Record<string, unknown>
+  // When the node shaped the answer, it reports per-field status. Anything
+  // other than `ok` means the value was missing, rejected or unparsed.
+  const status = fieldStatus?.precipitation_probability_pct
+  if (fieldStatus && status !== 'ok') throw new Error('Forecast rain chance was not verified by the node.')
+  const chance = data.precipitation_probability_pct
+  if (typeof chance !== 'number' || !Number.isFinite(chance) || chance < 0 || chance > 100) {
+    throw new Error('Forecast lacks a valid rain chance.')
+  }
+  const text = (value: unknown) => typeof value === 'string' && value.trim() ? value.trim().slice(0, 160) : undefined
+  return { weather: chance >= limitPct ? 'rain' : 'dry', chance,
+    condition: text(data.condition), when: text(data.when), location: text(data.location) }
 }
 
-export function classifyWindow(result: Record<string, unknown> | undefined, start: number, count: number, threshold: number) {
-  // An exact zero total bounds every hourly amount, provided the source
-  // explicitly covers the whole window. A free-text window is insufficient.
-  const windowStart = result?.start_time
-  const windowEnd = result?.end_time
-  if (result?.total_precipitation_mm === 0 && typeof windowStart === 'string' && typeof windowEnd === 'string'
-    && /(?:Z|[+-]\d\d:\d\d)$/i.test(windowStart) && /(?:Z|[+-]\d\d:\d\d)$/i.test(windowEnd)
-    && Date.parse(windowStart) === start && Date.parse(windowEnd) === start + count * 3_600_000) {
-    return { weather: 'dry' as const, rain: [], peak: 0 }
-  }
-  const peak = result?.hourly_max_precipitation_mm ?? result?.max_precipitation_mm
-  const timestamp = result?.start_time
-  const normalized = typeof timestamp === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?$/.test(timestamp)
-    ? timestamp + 'Z' : timestamp
-  if (typeof normalized !== 'string' || Date.parse(normalized) !== start || result?.hourly_count !== count
-    || typeof peak !== 'number' || !Number.isFinite(peak) || peak < 0) {
-    throw new Error('Forecast did not verify the requested UTC window and peak hourly precipitation.')
-  }
-  return { weather: peak >= threshold ? 'rain' as const : 'dry' as const, rain: [], peak }
+export function validLocation(value: unknown): value is string {
+  // The intent accepts a city or place name (max 256 bytes on-chain).
+  return typeof value === 'string' && value.trim().length >= 2 && Buffer.byteLength(value) <= 120
+    && !/[\u0000-\u001f\u007f]/.test(value)
 }

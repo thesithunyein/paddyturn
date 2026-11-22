@@ -3,7 +3,7 @@ import './landing.css'
 
 const steps = [
   ['Add your batches', 'Enter when each batch arrived, its moisture reading, and whether it can dry outside.'],
-  ['Check the weather', 'Tell PaddyTurn whether you expect dry weather or rain.'],
+  ['Check the weather', 'Tell PaddyTurn whether you expect dry weather or rain, or buy a rain-chance check through Telegraph.'],
   ['Choose the next batch', 'Assign a batch to the dryer. History saves the batch and time in this browser.'],
 ]
 
