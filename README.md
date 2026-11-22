@@ -88,7 +88,8 @@ To check any recorded signal: `curl https://devnode.telegraphprotocol.com/engine
 ## Verification
 
 - **Workspace:** Browser walkthrough verified adding batches, switching weather choices, recording a dryer assignment, and recovering it from History after reload. The walkthrough used test batches.
-- **Forecast:** Telegraph returned an x402 payment quote for the Pathein request. A funded escrow purchase, usable forecast response, and receipt have yet to be verified end to end. Response parsing follows the published `WEATHER_FORECAST_GENERAL` v4 format and is covered by unit tests.
+- **Forecast (testnet, verified 22 Nov 2026):** the production workspace bought a `WEATHER_FORECAST_GENERAL` forecast for Pathein, Myanmar from Anjoman testnet escrow. Telegraph routed it to Isobar Weather (miner 279), charged 10000 μUSDC (0.01 test USDC, epoch 38), and returned receipt `0x2ccd9c310cb690c857d5e4ddeff712aeb72e741feb2d3857ab3f13c6124dfed3` and signal `0xe3a3b8cb58386e5854bfd8d50ba4aeb5a218f4379c546d95751689fa2d128c7f`. The verified rain chance (0%, clear) was below the 40% limit, so PaddyTurn recommended outdoor drying. Check the signal: `curl https://devnode.telegraphprotocol.com/engine/v1/signal/0xe3a3b8cb58386e5854bfd8d50ba4aeb5a218f4379c546d95751689fa2d128c7f`.
+- **Known limitation:** the provider answered with a daily forecast rather than the exact 3-hour window. PaddyTurn uses the peak rain chance over the provider's period, which is conservative for a dry decision, and shows that period in the evidence.
 - **Field use:** A mill-operator walkthrough and independent reproduction are still pending.
 
 ## Reviewer walkthrough

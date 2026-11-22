@@ -79,7 +79,8 @@ export function readEngineAnswer(raw: Answer, limitPct: number, budgetUsd: numbe
   const evidence: Evidence = {
     billing: 'escrow', intent: typeof answer.intent === 'string' ? answer.intent : intent,
     provider: typeof answer.miner_name === 'string' ? answer.miner_name.slice(0, 80) : undefined,
-    minerId: [answer.miner_id, (record as Record<string, unknown> | undefined)?.miner]
+    // The receipt's miner is the registry ID; the reply's miner_id can be a subnet ID.
+    minerId: [(record as Record<string, unknown> | undefined)?.miner, answer.miner_id]
       .find(value => typeof value === 'string' || typeof value === 'number')?.toString(),
     cost: cost !== undefined && cost >= 0 ? cost : undefined,
     signalHash: hex(answer.signal_hash), receipts,

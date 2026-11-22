@@ -71,6 +71,7 @@ test('API-key reply wraps the engine answer in result and pays via receipt', () 
   assert.equal(forecast.evidence.minerId, '279')
   assert.deepEqual(forecast.evidence.receipts, [receipt])
   assert.equal(forecast.evidence.signalHash, signal)
+  assert.equal(readEngineAnswer({ result: { ...inner, miner_id: '20260826' }, receipt: liveReceipt }, 40, 0.26).evidence.minerId, '279')
 })
 
 test('a plain intent result next to a receipt is still read directly', () => {
