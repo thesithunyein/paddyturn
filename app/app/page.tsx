@@ -59,18 +59,17 @@ function ForecastEvidence({ forecast }: { forecast: Forecast }) {
     {chance !== undefined && <div className="evidence-main">
       <p className="evidence-figure"><strong>{chance}%</strong><span>chance of rain{condition ? ` · ${condition}` : ''}</span></p>
       {usable && threshold !== undefined && <p className={weather === 'rain' ? 'verdict rain' : 'verdict dry'}>
-        {weather === 'rain' ? `At or above your ${threshold}% limit. Keep outdoor batches in the dryer queue.`
-          : `Below your ${threshold}% limit. Outdoor drying is safe.`}</p>}
+        {weather === 'rain' ? `${threshold}% or more. Keep it in the dryer queue.` : `Below ${threshold}%. Safe to dry outside.`}</p>}
     </div>}
     {chance === undefined && peak !== undefined && <p className="evidence-figure"><strong>{peak} mm</strong><span>peak hourly rain</span></p>}
     <dl className="evidence-facts">
       {location && <div><dt>Place</dt><dd>{location}</dd></div>}
-      {provider && <div><dt>Weather source</dt><dd>{provider}</dd></div>}
+      {provider && <div><dt>Source</dt><dd>{provider}</dd></div>}
       {typeof evidence?.cost === 'number' && <div><dt>Cost</dt><dd>{evidence.cost} test USDC</dd></div>}
       {windowStart !== undefined && <div><dt>Checked</dt><dd>{new Date(windowStart).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</dd></div>}
     </dl>
     {evidence?.signalHash && <a className="evidence-link" href={signalUrl(evidence.signalHash)} target="_blank" rel="noreferrer">
-      Check this forecast on Telegraph ↗</a>}
+      Check on Telegraph ↗</a>}
     {evidence && <details className="evidence-tech">
       <summary>Technical details</summary>
       <dl>
