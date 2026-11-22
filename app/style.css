@@ -208,3 +208,17 @@ input, select { max-width: 100% }
 .proof-tech .evidence-link { display: inline-block }
 .proof-back { margin: 20px 0 0 }
 .proof-back a { color: var(--green); font-weight: 650 }
+
+/* Language toggle and Burmese typography */
+.top-tools { display: flex; align-items: center; gap: 14px }
+.lang-toggle { display: inline-flex; padding: 2px; border: 1px solid var(--line); border-radius: 999px; background: #fff }
+.lang-toggle button { border: 0; border-radius: 999px; padding: 4px 11px; font-size: .78rem; font-weight: 700; color: var(--muted); background: transparent }
+.lang-toggle button[aria-pressed=true] { background: var(--green); color: #fffaf0 }
+/* Latin fonts have no Myanmar glyphs: use the system Myanmar fonts, with taller lines for stacked marks. */
+:lang(my) body, :lang(my) h1, :lang(my) h2, :lang(my) h3, :lang(my) button, :lang(my) input, :lang(my) select,
+[lang=my] { font-family: "Noto Sans Myanmar", "Myanmar Text", "Pyidaungsu", Padauk, "Myanmar Sangam MN", system-ui, sans-serif }
+:lang(my) body { line-height: 1.75 }
+:lang(my) h1 { line-height: 1.35; letter-spacing: 0 }
+:lang(my) h2, :lang(my) h3 { line-height: 1.5; letter-spacing: 0 }
+:lang(my) .landing-hero h1 { max-width: 16ch; font-size: clamp(2rem, 4vw, 3.3rem) }
+:lang(my) .next .answer { font-size: clamp(1.8rem, 4vw, 2.6rem); line-height: 1.4 }
