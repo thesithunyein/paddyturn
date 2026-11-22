@@ -57,3 +57,24 @@ test('cost is read from USD, numeric-string and μUSDC field variants', async ()
   assert.equal(costFrom({ amount: 'x' }), undefined)
   assert.equal(costFrom(null), undefined)
 })
+
+// Shape observed from the live API-key reply on testnet (Nov 2026).
+const liveReceipt = { receipt_hash: receipt, rail: 'escrow', miner: '279', intent: 'WEATHER_FORECAST_GENERAL',
+  amount_uusdc: '10000', epoch_id: 38, settlement: 'epoch', chain: 'telegraph' }
+
+test('API-key reply wraps the engine answer in result and pays via receipt', () => {
+  const inner = { result_shape: 'intent', field_status: { precipitation_probability_pct: 'ok' }, signal_hash: signal,
+    result: { location: 'Pathein, Myanmar', precipitation_probability_pct: 55, condition: 'Showers' } }
+  const forecast = readEngineAnswer({ result: inner, receipt: liveReceipt }, 40, 0.26)
+  assert.equal(forecast.weather, 'rain')
+  assert.equal(forecast.evidence.cost, 0.01)
+  assert.equal(forecast.evidence.minerId, '279')
+  assert.deepEqual(forecast.evidence.receipts, [receipt])
+  assert.equal(forecast.evidence.signalHash, signal)
+})
+
+test('a plain intent result next to a receipt is still read directly', () => {
+  const forecast = readEngineAnswer({ result: { precipitation_probability_pct: 10 }, receipt: liveReceipt }, 40, 0.26)
+  assert.equal(forecast.weather, 'dry')
+  assert.equal(forecast.evidence.minerId, '279')
+})

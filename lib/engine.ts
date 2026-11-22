@@ -50,7 +50,20 @@ export function costFrom(source: unknown): number | undefined {
 
 const hex = (value: unknown) => typeof value === 'string' && /^(0x)?[0-9a-f]{16,128}$/i.test(value) ? value : undefined
 
-export function readEngineAnswer(answer: Answer, limitPct: number, budgetUsd: number) {
+// The API-key reply is `{ result, receipt }`, where `result` holds the node's
+// own reply (result, field_status, signal_hash, miner fields). Unwrap it so
+// the same rules apply to both reply forms. Observed on testnet, Nov 2026.
+export function unwrapAnswer(answer: Answer): Answer {
+  const inner = answer?.result
+  if (inner && typeof inner === 'object' && !Array.isArray(inner)
+    && ['result', 'field_status', 'signal_hash', 'result_shape', 'miner_id'].some(key => key in inner)) {
+    return { ...(inner as Answer), receipt: answer.receipt ?? (inner as Answer).receipt }
+  }
+  return answer
+}
+
+export function readEngineAnswer(raw: Answer, limitPct: number, budgetUsd: number) {
+  const answer = unwrapAnswer(raw)
   const payments = Array.isArray(answer.fulfillment?.payments) ? answer.fulfillment.payments as Payment[] : []
   // Receipts come from `fulfillment.payments` (budgeted asks) and/or the
   // top-level `receipt` payment record (API-key asks): a hash or an object.
@@ -66,7 +79,8 @@ export function readEngineAnswer(answer: Answer, limitPct: number, budgetUsd: nu
   const evidence: Evidence = {
     billing: 'escrow', intent: typeof answer.intent === 'string' ? answer.intent : intent,
     provider: typeof answer.miner_name === 'string' ? answer.miner_name.slice(0, 80) : undefined,
-    minerId: typeof answer.miner_id === 'string' || typeof answer.miner_id === 'number' ? String(answer.miner_id) : undefined,
+    minerId: [answer.miner_id, (record as Record<string, unknown> | undefined)?.miner]
+      .find(value => typeof value === 'string' || typeof value === 'number')?.toString(),
     cost: cost !== undefined && cost >= 0 ? cost : undefined,
     signalHash: hex(answer.signal_hash), receipts,
     fulfillment: typeof answer.fulfillment?.status === 'string' ? answer.fulfillment.status : undefined,
@@ -104,8 +118,9 @@ export async function requestForecast(location: string, hours: number, limitPct:
   const answer = await response.json() as Answer
   // Shape only (keys, receipt record, cost fields) so integration issues can
   // be diagnosed from deployment logs. No credentials are in the reply.
-  console.log('telegraph_engine_answer', JSON.stringify({ keys: Object.keys(answer ?? {}), receipt: answer?.receipt,
-    cost_usd: answer?.cost_usd, costUsd: (answer as Record<string, unknown>)?.costUsd, result_shape: answer?.result_shape,
-    field_status: answer?.field_status, fulfillment: answer?.fulfillment?.status }).slice(0, 1500))
+  const inner = unwrapAnswer(answer)
+  console.log('telegraph_engine_answer', JSON.stringify({ keys: Object.keys(answer ?? {}), innerKeys: Object.keys(inner ?? {}),
+    receipt: answer?.receipt, result_shape: inner?.result_shape, field_status: inner?.field_status,
+    result: inner?.result, signal_hash: inner?.signal_hash, fulfillment: inner?.fulfillment?.status }).slice(0, 2500))
   return readEngineAnswer(answer, limitPct, budgetUsd)
 }
