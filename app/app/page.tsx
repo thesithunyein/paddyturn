@@ -306,7 +306,7 @@ export default function Dashboard() {
           </tbody></table></div> : <div className="empty"><h3>{t('app.noHistory')}</h3><p>{t('app.noHistoryHint')}</p></div>}</>}
         <footer className="sync">
           {millCode ? <>
-            <span>{sync === 'syncing' ? t('sync.syncing') : sync === 'error' ? t('sync.error') : t('sync.synced', { n: activeDays })}</span>
+            <span>{sync === 'syncing' ? t('sync.syncing') : sync === 'error' ? t('sync.error') : activeDays === 1 ? t('sync.synced.one') : t('sync.synced', { n: activeDays })}</span>
             <button type="button" className="link-button" onClick={disconnect}>{t('sync.leave')}</button>
           </> : joining ? <form className="sync-form" onSubmit={joinMill}>
             <label>{t('sync.code')}<input name="mill" type="password" autoComplete="off" minLength={10} maxLength={64} required /></label>
