@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     // the account can actually be charged for one ask.
     const forecast = await requestForecast(location, hours as number, threshold as number, Math.max(requestBudget, routedCapUsd))
     budget.settle(routedCapUsd, forecast.evidence.cost)
-    return Response.json({ ...forecast, windowStart, threshold, validUntil: windowStart + (hours as number) * 3_600_000 })
+    return Response.json({ ...forecast, location: ('location' in forecast && forecast.location) || location.trim(), windowStart, threshold, validUntil: windowStart + (hours as number) * 3_600_000 })
   } catch (error) {
     // Engine errors before a paid call are documented as not charged; a
     // timeout may still have been charged, so the reservation is kept.
