@@ -89,7 +89,7 @@ To check any recorded signal: `curl https://devnode.telegraphprotocol.com/engine
 
 - **Workspace:** Browser walkthrough verified adding batches, switching weather choices, recording a dryer assignment, and recovering it from History after reload. The walkthrough used test batches.
 - **Forecast (testnet, verified 22 Nov 2026):** the production workspace bought a `WEATHER_FORECAST_GENERAL` forecast for Pathein, Myanmar from Anjoman testnet escrow. Telegraph routed it to Isobar Weather (miner 279), charged 10000 μUSDC (0.01 test USDC, epoch 38), and returned receipt `0x2ccd9c310cb690c857d5e4ddeff712aeb72e741feb2d3857ab3f13c6124dfed3` and signal `0xe3a3b8cb58386e5854bfd8d50ba4aeb5a218f4379c546d95751689fa2d128c7f`. The verified rain chance (0%, clear) was below the 40% limit, so PaddyTurn recommended outdoor drying. Check the signal: `curl https://devnode.telegraphprotocol.com/engine/v1/signal/0xe3a3b8cb58386e5854bfd8d50ba4aeb5a218f4379c546d95751689fa2d128c7f`.
-- **Known limitation:** the provider answered with a daily forecast rather than the exact 3-hour window. PaddyTurn uses the peak rain chance over the provider's period, which is conservative for a dry decision, and shows that period in the evidence.
+- **Window:** the provider's shaped answer is a daily peak; PaddyTurn now reads the hourly data from Telegraph's public record and decides on the exact window, falling back to the daily peak only when the record is not yet published.
 - **Field use:** A mill-operator walkthrough and independent reproduction are still pending.
 
 ## Reviewer walkthrough
@@ -99,6 +99,20 @@ To check any recorded signal: `curl https://devnode.telegraphprotocol.com/engine
 3. Check the rain chance, limit, provider, receipt, signal hash and cost. Run it again with the limit set above and then below the returned chance to see the recommendation flip (each run is a separate paid check). Confirm the recommended batch, reload, open **History**, and expand **View evidence**.
 4. For a failure case, use a deliberately invalid access code on a weather-dependent queue. The app should ask for operator review and show no paid job evidence.
 5. Look up the signal hash with the `curl` command above. Label the queue as test data unless supplied by an operator. The quote alone does not prove settlement.
+
+## Mill workspaces (optional)
+
+Connect **Upstash for Redis** to the Vercel project (Storage tab) to turn on:
+
+- **Sync with a mill code** under the queue: the same queue and history on every device that knows the code. Only a hash of the code is stored, and workspace data is validated and size-capped.
+- **Active days:** each day a mill saves changes is recorded, so repeat use is visible ("active on N days").
+- **Shared daily budget:** one atomic counter per UTC day across all server instances.
+
+Without Redis, everything stays in the browser and the daily budget is per server instance.
+
+## Proof pages and cross-check
+
+Every forecast has a public page at `/proof/<signal_hash>`, rendered from Telegraph's public signal record. After each paid answer the server reads that record (free), requires `verified: true` and a matching intent, and decides on the provider's hourly rain chance for the exact requested window. If the record is not yet published, the provider's daily peak is used and labelled.
 
 ## What changes for mainnet
 

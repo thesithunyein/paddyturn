@@ -30,3 +30,28 @@ export function createBudget(limitUsd: number) {
     remaining(now = Date.now()) { roll(now); return Math.max(0, limitUsd - spent) },
   }
 }
+
+type Run = (commands: (string | number)[][]) => Promise<unknown[]>
+
+// Account-wide daily budget shared by every server instance, using an atomic
+// Redis counter per UTC day. Falls back to the per-instance budget when the
+// store is unavailable, so forecasts never run without a limit.
+export function createSharedBudget(limitUsd: number, run: Run | undefined, fallback = createBudget(limitUsd)) {
+  const key = (now: number) => `pt:budget:${new Date(now).toISOString().slice(0, 10)}`
+  return {
+    async reserve(amountUsd: number, now = Date.now()) {
+      if (!run) return fallback.reserve(amountUsd, now)
+      try {
+        const [total] = await run([['INCRBYFLOAT', key(now), amountUsd], ['EXPIRE', key(now), 172_800]])
+        if (Number(total) <= limitUsd + 1e-9) return true
+        await run([['INCRBYFLOAT', key(now), -amountUsd]])
+        return false
+      } catch { return fallback.reserve(amountUsd, now) }
+    },
+    async settle(reservedUsd: number, actualUsd: number | undefined, now = Date.now()) {
+      if (!(typeof actualUsd === 'number' && Number.isFinite(actualUsd) && actualUsd >= 0 && actualUsd <= reservedUsd)) return
+      if (!run) return fallback.settle(reservedUsd, actualUsd, now)
+      try { await run([['INCRBYFLOAT', key(now), actualUsd - reservedUsd]]) } catch { /* keep the reservation */ }
+    },
+  }
+}

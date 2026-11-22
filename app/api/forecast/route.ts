@@ -1,5 +1,6 @@
 import { timingSafeEqual } from 'node:crypto'
-import { createBudget } from '../../../lib/budget'
+import { createSharedBudget } from '../../../lib/budget'
+import { redis, storeReady } from '../../../lib/store'
 import { requestBudgetUsd, requestForecast, routedCapUsd } from '../../../lib/engine'
 import { validLocation } from '../../../lib/forecast'
 import { applySignalCheck } from '../../../lib/check'
@@ -8,7 +9,7 @@ import { awaitSignal } from '../../../lib/signal'
 export const maxDuration = 60
 
 const dailyLimit = Number(process.env.TELEGRAPH_DAILY_BUDGET_USD || '1')
-const budget = createBudget(Number.isFinite(dailyLimit) && dailyLimit > 0 && dailyLimit <= 20 ? dailyLimit : 1)
+const budget = createSharedBudget(Number.isFinite(dailyLimit) && dailyLimit > 0 && dailyLimit <= 20 ? dailyLimit : 1, storeReady ? redis : undefined)
 
 function authorized(request: Request) {
   const expected = process.env.LOCAL_FORECAST_TOKEN || ''
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
   }
   const requestBudget = requestBudgetUsd()
   // Anjoman may spend up to its routed cap, so reserve that, then settle.
-  if (!budget.reserve(routedCapUsd)) {
+  if (!await budget.reserve(routedCapUsd)) {
     return Response.json({ reason: 'Today’s forecast budget is used up. Enter outdoor conditions manually.' }, { status: 429 })
   }
   const windowStart = Date.now()
@@ -36,7 +37,7 @@ export async function POST(request: Request) {
     // The paid cost is verified against Anjoman's routed cap, which is what
     // the account can actually be charged for one ask.
     const forecast = await requestForecast(location, hours as number, threshold as number, Math.max(requestBudget, routedCapUsd))
-    budget.settle(routedCapUsd, forecast.evidence.cost)
+    await budget.settle(routedCapUsd, forecast.evidence.cost)
     // Free cross-check: Telegraph's public record of this signal, read through
     // a second endpoint. Gives verification and hourly data for the exact window.
     const record = forecast.evidence.signalHash ? await awaitSignal(forecast.evidence.signalHash, 4, 4_000) : undefined
