@@ -47,3 +47,13 @@ test('request budget stays inside the testnet range', () => {
   assert.equal(requestBudgetUsd('0'), 0.10)
   assert.equal(requestBudgetUsd('abc'), 0.10)
 })
+
+test('cost is read from USD, numeric-string and μUSDC field variants', async () => {
+  const { costFrom } = await import('../lib/engine.ts')
+  assert.equal(costFrom({ costUsd: 0.012 }), 0.012)
+  assert.equal(costFrom({ amount_usd: '0.02' }), 0.02)
+  assert.equal(costFrom({ amountUusdc: 15000 }), 0.015)
+  assert.equal(costFrom({ amount_uusdc: '10000' }), 0.01)
+  assert.equal(costFrom({ amount: 'x' }), undefined)
+  assert.equal(costFrom(null), undefined)
+})

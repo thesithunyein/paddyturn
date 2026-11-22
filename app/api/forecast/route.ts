@@ -31,7 +31,9 @@ export async function POST(request: Request) {
   }
   const windowStart = Date.now()
   try {
-    const forecast = await requestForecast(location, hours as number, threshold as number, requestBudget)
+    // The paid cost is verified against Anjoman's routed cap, which is what
+    // the account can actually be charged for one ask.
+    const forecast = await requestForecast(location, hours as number, threshold as number, Math.max(requestBudget, routedCapUsd))
     budget.settle(routedCapUsd, forecast.evidence.cost)
     return Response.json({ ...forecast, windowStart, threshold, validUntil: windowStart + (hours as number) * 3_600_000 })
   } catch (error) {

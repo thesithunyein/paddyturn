@@ -30,6 +30,24 @@ export type Evidence = {
   signalHash?: string; receipts: string[]; fulfillment?: string; timestamp?: string
 }
 
+// Amount fields vary between the engine reference and the API-key reply:
+// USD values as numbers or numeric strings, or μUSDC integers.
+const num = (value: unknown) => typeof value === 'number' ? value
+  : typeof value === 'string' && /^\d+(\.\d+)?$/.test(value) ? Number(value) : undefined
+export function costFrom(source: unknown): number | undefined {
+  if (!source || typeof source !== 'object') return undefined
+  const data = source as Record<string, unknown>
+  for (const key of ['cost_usd', 'costUsd', 'amount_usd', 'amountUsd', 'price_usd', 'priceUsd']) {
+    const value = num(data[key])
+    if (value !== undefined && Number.isFinite(value) && value >= 0) return value
+  }
+  for (const key of ['amount_uusdc', 'amountUusdc', 'amount_micro_usdc', 'cost_uusdc', 'costUusdc']) {
+    const value = num(data[key])
+    if (value !== undefined && Number.isFinite(value) && value >= 0) return value / 1e6
+  }
+  return undefined
+}
+
 const hex = (value: unknown) => typeof value === 'string' && /^(0x)?[0-9a-f]{16,128}$/i.test(value) ? value : undefined
 
 export function readEngineAnswer(answer: Answer, limitPct: number, budgetUsd: number) {
@@ -42,10 +60,9 @@ export function readEngineAnswer(answer: Answer, limitPct: number, budgetUsd: nu
       .map(key => (record as Record<string, unknown>)[key]) : []
   const receipts = [...new Set([...payments.map(payment => payment?.receipt_hash), ...recordHashes]
     .map(hex).filter((value): value is string => Boolean(value)))]
-  const recordCost = record && typeof record === 'object' ? (record as Record<string, unknown>).amount_uusdc : undefined
+  const recordCost = costFrom(record)
   const paid = payments.reduce((sum, payment) => sum + (typeof payment?.amount_uusdc === 'number' ? payment.amount_uusdc : 0), 0) / 1e6
-  const reported = typeof answer.cost_usd === 'number' && Number.isFinite(answer.cost_usd) ? answer.cost_usd : undefined
-  const cost = reported ?? (payments.length ? paid : typeof recordCost === 'number' ? recordCost / 1e6 : undefined)
+  const cost = costFrom(answer) ?? (payments.length ? paid : recordCost)
   const evidence: Evidence = {
     billing: 'escrow', intent: typeof answer.intent === 'string' ? answer.intent : intent,
     provider: typeof answer.miner_name === 'string' ? answer.miner_name.slice(0, 80) : undefined,
@@ -84,5 +101,11 @@ export async function requestForecast(location: string, hours: number, limitPct:
     // Engine 4xx/503 responses are documented as not charged.
     throw new Error(`Telegraph returned HTTP ${response.status}${detail ? `: ${detail.slice(0, 160)}` : ''}. No forecast was used.`)
   }
-  return readEngineAnswer(await response.json() as Answer, limitPct, budgetUsd)
+  const answer = await response.json() as Answer
+  // Shape only (keys, receipt record, cost fields) so integration issues can
+  // be diagnosed from deployment logs. No credentials are in the reply.
+  console.log('telegraph_engine_answer', JSON.stringify({ keys: Object.keys(answer ?? {}), receipt: answer?.receipt,
+    cost_usd: answer?.cost_usd, costUsd: (answer as Record<string, unknown>)?.costUsd, result_shape: answer?.result_shape,
+    field_status: answer?.field_status, fulfillment: answer?.fulfillment?.status }).slice(0, 1500))
+  return readEngineAnswer(answer, limitPct, budgetUsd)
 }
