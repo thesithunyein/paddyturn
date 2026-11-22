@@ -4,7 +4,7 @@ import './landing.css'
 // A real testnet check from the production workspace (22 Nov 2026), shown as
 // a sample. Anyone can open the signal on Telegraph's public lookup.
 const proofSignal = '0xd06ae8c038d83ecd2c1fc631210b7e87dad9cdb618abca1547b43d2056e1ee46'
-const proofUrl = `https://devnode.telegraphprotocol.com/engine/v1/signal/${proofSignal}`
+const proofUrl = `/proof/${proofSignal}`
 
 const audience = [
   ['Small rice mills', 'One dryer, many batches.'],
@@ -118,7 +118,7 @@ export default function Landing() {
             <div><dt>Cost</dt><dd>0.01 test USDC</dd></div>
             <div><dt>Signal</dt><dd><code>0xd06ae8…e1ee46</code></dd></div>
           </dl>
-          <a className="evidence-link" href={proofUrl} target="_blank" rel="noreferrer">Check on Telegraph ↗</a>
+          <a className="evidence-link" href={proofUrl}>Check on Telegraph →</a>
         </div>
       </figure>
     </section>

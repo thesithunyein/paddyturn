@@ -104,7 +104,7 @@ export async function requestForecast(location: string, hours: number, limitPct:
   const key = process.env.TELEGRAPH_API_KEY?.trim()
   if (!key) throw new Error('Forecast service is not configured. Enter outdoor conditions manually.')
   const response = await fetch(`${endpoint}/engine/ask`, {
-    method: 'POST', redirect: 'error', cache: 'no-store', signal: AbortSignal.timeout(55_000),
+    method: 'POST', redirect: 'error', cache: 'no-store', signal: AbortSignal.timeout(35_000),
     headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ intent, params: { location: location.trim(), window_hours: hours } }),
   })
