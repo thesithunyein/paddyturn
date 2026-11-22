@@ -20,6 +20,14 @@ test('a paid, shaped answer decides the turn and keeps receipt evidence', () => 
   assert.equal(forecast.evidence.provider, 'Oathcast Weather')
 })
 
+test('API-key answers prove payment with the top-level receipt record', () => {
+  const { fulfillment, ...rest } = answer
+  const forecast = readEngineAnswer({ ...rest, signal_hash: undefined, receipt: { receipt_hash: receipt, amount_uusdc: 10000 } }, 40, 0.10)
+  assert.equal(forecast.weather, 'dry')
+  assert.deepEqual(forecast.evidence.receipts, [receipt])
+  assert.equal(readEngineAnswer({ ...rest, signal_hash: undefined, cost_usd: undefined, receipt: { receipt_hash: receipt, amount_uusdc: 10000 } }, 40, 0.10).evidence.cost, 0.01)
+})
+
 test('cost falls back to the sum of fulfillment payments', () => {
   assert.equal(readEngineAnswer({ ...answer, cost_usd: undefined }, 40, 0.10).evidence.cost, 0.01)
 })

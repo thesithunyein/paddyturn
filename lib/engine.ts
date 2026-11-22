@@ -1,13 +1,17 @@
 import { classifyRainChance } from './forecast.ts'
 
 // Anjoman API (API key, paid from the account's testnet escrow). The routed
-// ask lets Telegraph pick the best-ranked miner for the intent and returns
-// per-payment receipts in `fulfillment.payments` when a budget is set.
+// ask lets Telegraph pick the best-ranked miner for the intent. With an API
+// key the body is only `intent` + `params` (or `query`): Anjoman sets the
+// routed budget itself (0.26 USD) and returns the payment record in `receipt`.
 // Docs: https://anjoman.ai/docs/using/api-keys and /docs/using/engine-ask
 const endpoint = process.env.TELEGRAPH_API_BASE?.trim() || 'https://backend.telegraphprotocol.com'
 export const intent = process.env.TELEGRAPH_INTENT?.trim() || 'WEATHER_FORECAST_GENERAL'
 
-// Testnet accepts max_budget_usdc from 10000 to 260000 μUSDC ($0.01–$0.26).
+// Anjoman caps a routed API-key ask at 0.26 USD. The daily budget reserves
+// that full amount per request; this setting is the most PaddyTurn accepts
+// as a verified cost for one forecast (0.01–0.26).
+export const routedCapUsd = 0.26
 export function requestBudgetUsd(raw = process.env.TELEGRAPH_MAX_SPEND_USD) {
   const value = Number(raw ?? '0.10')
   return Number.isFinite(value) && value >= 0.01 && value <= 0.26 ? value : 0.10
@@ -18,6 +22,7 @@ type Answer = {
   result?: unknown; result_shape?: unknown; field_status?: Record<string, unknown>; cost_usd?: unknown
   signal_hash?: unknown; miner_id?: unknown; miner_name?: unknown; intent?: unknown; timestamp?: unknown
   fulfillment?: { status?: unknown; stopped?: unknown; payments?: unknown }; error?: unknown
+  receipt?: unknown
 }
 
 export type Evidence = {
@@ -29,10 +34,18 @@ const hex = (value: unknown) => typeof value === 'string' && /^(0x)?[0-9a-f]{16,
 
 export function readEngineAnswer(answer: Answer, limitPct: number, budgetUsd: number) {
   const payments = Array.isArray(answer.fulfillment?.payments) ? answer.fulfillment.payments as Payment[] : []
-  const receipts = payments.map(payment => hex(payment?.receipt_hash)).filter((value): value is string => Boolean(value))
+  // Receipts come from `fulfillment.payments` (budgeted asks) and/or the
+  // top-level `receipt` payment record (API-key asks): a hash or an object.
+  const record = answer.receipt
+  const recordHashes = typeof record === 'string' ? [record]
+    : record && typeof record === 'object' ? ['receipt_hash', 'receiptHash', 'hash', 'tx_hash', 'txHash']
+      .map(key => (record as Record<string, unknown>)[key]) : []
+  const receipts = [...new Set([...payments.map(payment => payment?.receipt_hash), ...recordHashes]
+    .map(hex).filter((value): value is string => Boolean(value)))]
+  const recordCost = record && typeof record === 'object' ? (record as Record<string, unknown>).amount_uusdc : undefined
   const paid = payments.reduce((sum, payment) => sum + (typeof payment?.amount_uusdc === 'number' ? payment.amount_uusdc : 0), 0) / 1e6
   const reported = typeof answer.cost_usd === 'number' && Number.isFinite(answer.cost_usd) ? answer.cost_usd : undefined
-  const cost = reported ?? (payments.length ? paid : undefined)
+  const cost = reported ?? (payments.length ? paid : typeof recordCost === 'number' ? recordCost / 1e6 : undefined)
   const evidence: Evidence = {
     billing: 'escrow', intent: typeof answer.intent === 'string' ? answer.intent : intent,
     provider: typeof answer.miner_name === 'string' ? answer.miner_name.slice(0, 80) : undefined,
@@ -61,14 +74,15 @@ export async function requestForecast(location: string, hours: number, limitPct:
   const response = await fetch(`${endpoint}/engine/ask`, {
     method: 'POST', redirect: 'error', cache: 'no-store', signal: AbortSignal.timeout(55_000),
     headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ intent, params: { location: location.trim(), window_hours: hours },
-      max_budget_usdc: Math.round(budgetUsd * 1e6), deadline_ms: 45_000 }),
+    body: JSON.stringify({ intent, params: { location: location.trim(), window_hours: hours } }),
   })
   if (!response.ok) {
-    const body = await response.json().catch(() => ({})) as { error?: unknown; code?: unknown }
-    const code = [body.code, body.error].find(value => typeof value === 'string') as string | undefined
-    // 4xx/503 responses from the engine are documented as not charged.
-    throw new Error(`Telegraph returned HTTP ${response.status}${code ? ` (${code.slice(0, 80)})` : ''}. No forecast was used.`)
+    const body = await response.json().catch(() => ({})) as Record<string, unknown>
+    const detail = [body.message, body.error, body.code].find(value => typeof value === 'string') as string | undefined
+    // Logged without secrets so the deployment logs show why Telegraph refused.
+    console.error('telegraph_engine_error', response.status, JSON.stringify(body).slice(0, 600))
+    // Engine 4xx/503 responses are documented as not charged.
+    throw new Error(`Telegraph returned HTTP ${response.status}${detail ? `: ${detail.slice(0, 160)}` : ''}. No forecast was used.`)
   }
   return readEngineAnswer(await response.json() as Answer, limitPct, budgetUsd)
 }
