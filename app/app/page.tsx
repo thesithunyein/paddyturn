@@ -18,6 +18,8 @@ type Forecast = { weather?: Weather; chance?: number; condition?: string; when?:
     provider?: string; minerId?: string; intent?: string; miner?: string; cost?: number; signalHash?: string; fulfillment?: string } }
 
 const storageKey = 'paddyturn.workspace.v1'
+const millKey = 'paddyturn.mill'
+type Sync = 'local' | 'syncing' | 'synced' | 'error' | 'off'
 const initial: Workspace = { batches: [], history: [], priority: 'moisture', weather: 'unknown' }
 const weatherOptions = ['unknown', 'dry', 'rain'] as const
 
@@ -114,13 +116,77 @@ export default function Dashboard() {
   const [forecast, setForecast] = useState<Forecast>()
   const [checking, setChecking] = useState(false)
   const [tab, setTab] = useState<'queue' | 'history'>('queue')
+  const [millCode, setMillCode] = useState('')
+  const [sync, setSync] = useState<Sync>('local')
+  const [activeDays, setActiveDays] = useState(0)
+  const [joining, setJoining] = useState(false)
+  const [syncError, setSyncError] = useState('')
+  const pushTimer = useRef<number | undefined>(undefined)
   useEffect(() => {
+    let local = initial
     try {
       const data = localStorage.getItem(storageKey)
-      if (data) setWorkspace(JSON.parse(data))
+      if (data) { local = JSON.parse(data); setWorkspace(local) }
+      const code = localStorage.getItem(millKey)
+      if (code) void connect(code, local)
     } catch { setStorageError(true) }
     setReady(true)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Pull the latest mill workspace when the tab comes back into view.
+  useEffect(() => {
+    if (!millCode) return
+    const refresh = () => { if (document.visibilityState === 'visible') void pull(millCode) }
+    document.addEventListener('visibilitychange', refresh)
+    return () => document.removeEventListener('visibilitychange', refresh)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [millCode])
+
+  async function pull(code: string) {
+    const response = await fetch('/api/workspace', { headers: { 'x-mill-code': code }, cache: 'no-store' })
+    const body = await response.json().catch(() => ({}))
+    if (response.status === 503 && !body.workspace) throw Object.assign(new Error('off'), { off: /not set up/.test(body.reason || '') })
+    if (!response.ok) throw new Error(body.reason || 'sync')
+    setActiveDays(body.activeDays || 0)
+    if (body.workspace) {
+      const { batches, history, priority, weather } = body.workspace as Workspace
+      const next = { batches, history, priority, weather }
+      try { localStorage.setItem(storageKey, JSON.stringify(next)) } catch { /* keep in memory */ }
+      setWorkspace(next)
+    }
+    return Boolean(body.workspace)
+  }
+
+  async function push(code: string, next: Workspace) {
+    setSync('syncing')
+    try {
+      const response = await fetch('/api/workspace', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'x-mill-code': code },
+        body: JSON.stringify({ workspace: next }) })
+      const body = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(body.reason || 'sync')
+      setActiveDays(body.activeDays || 0)
+      setSync('synced')
+    } catch { setSync('error') }
+  }
+
+  async function connect(code: string, local: Workspace) {
+    setSync('syncing'); setSyncError('')
+    try {
+      // Server data wins; an empty mill workspace is filled from this browser.
+      const found = await pull(code)
+      if (!found) await push(code, local)
+      try { localStorage.setItem(millKey, code) } catch { /* not remembered */ }
+      setMillCode(code); setSync('synced'); setJoining(false)
+    } catch (error) {
+      setSync((error as { off?: boolean }).off ? 'off' : 'error')
+    }
+  }
+
+  function disconnect() {
+    try { localStorage.removeItem(millKey) } catch { /* nothing to remove */ }
+    setMillCode(''); setSync('local'); setActiveDays(0)
+  }
 
   useEffect(() => {
     if (editing && dialog.current && !dialog.current.open) dialog.current.showModal()
@@ -132,6 +198,17 @@ export default function Dashboard() {
       setStorageError(false)
     } catch { setStorageError(true) }
     setWorkspace(next)
+    if (millCode) {
+      window.clearTimeout(pushTimer.current)
+      pushTimer.current = window.setTimeout(() => void push(millCode, next), 600)
+    }
+  }
+
+  function joinMill(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const code = String(new FormData(event.currentTarget).get('mill') || '').trim()
+    if (code.length < 10 || code.length > 64 || /\s/.test(code)) { setSyncError(t('sync.invalid')); return }
+    void connect(code, workspace)
   }
 
   const { batches, history, priority, weather } = workspace
@@ -227,7 +304,20 @@ export default function Dashboard() {
         </> : <><div className="section-bar"><h2>{t('app.historyTitle')}</h2></div>{history.length ? <div className="scroll"><table><thead><tr><th>{t('app.col.batch')}</th><th>{t('app.col.moisture')}</th><th>{t('app.col.assignedAt')}</th><th>{t('app.col.forecast')}</th></tr></thead><tbody>
           {history.map(item => <tr key={item.batch.key}><th scope="row">{item.batch.id}</th><td>{item.batch.moisture}%</td><td>{new Date(item.at).toLocaleString()}</td><td>{item.forecast ? <details className="history-forecast"><summary>{t('app.viewEvidence')}</summary><ForecastEvidence forecast={item.forecast} /></details> : "—"}</td></tr>)}
           </tbody></table></div> : <div className="empty"><h3>{t('app.noHistory')}</h3><p>{t('app.noHistoryHint')}</p></div>}</>}
-        <footer>{t('app.savedBrowser')}</footer>
+        <footer className="sync">
+          {millCode ? <>
+            <span>{sync === 'syncing' ? t('sync.syncing') : sync === 'error' ? t('sync.error') : t('sync.synced', { n: activeDays })}</span>
+            <button type="button" className="link-button" onClick={disconnect}>{t('sync.leave')}</button>
+          </> : joining ? <form className="sync-form" onSubmit={joinMill}>
+            <label>{t('sync.code')}<input name="mill" type="password" autoComplete="off" minLength={10} maxLength={64} required /></label>
+            <button type="submit" disabled={sync === 'syncing'}>{sync === 'syncing' ? t('sync.syncing') : t('sync.connect')}</button>
+            <button type="button" className="link-button" onClick={() => { setJoining(false); setSyncError('') }}>{t('sync.cancel')}</button>
+            <p>{syncError || (sync === 'off' ? t('sync.off') : sync === 'error' ? t('sync.error') : t('sync.hint'))}</p>
+          </form> : <>
+            <span>{t('app.savedBrowser')}</span>
+            <button type="button" className="link-button" disabled={!ready} onClick={() => setJoining(true)}>{t('sync.use')}</button>
+          </>}
+        </footer>
       </section>
       <aside className="side">
         <section className="card next" aria-live="polite">
