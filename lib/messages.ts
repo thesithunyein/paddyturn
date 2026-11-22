@@ -3,7 +3,7 @@
 export const messages = {
   en: {
     'lang.label': 'Language',
-    'nav.how': 'How it works', 'nav.proof': 'Verified forecasts', 'nav.faq': 'FAQ',
+    'nav.how': 'How it works', 'nav.proof': 'Verified forecasts', 'nav.faq': 'FAQ', 'nav.docs': 'Docs',
     'hero.title': 'Dry the right batch next.',
     'hero.sub': 'Rank arriving paddy, check the rain, and give your dryer to the batch that needs it.',
     'hero.open': 'Open workspace', 'hero.see': 'See a real forecast',
@@ -91,7 +91,7 @@ export const messages = {
   },
   my: {
     'lang.label': 'ဘာသာစကား',
-    'nav.how': 'အသုံးပြုပုံ', 'nav.proof': 'အတည်ပြုထားသော ခန့်မှန်းချက်', 'nav.faq': 'မေးခွန်းများ',
+    'nav.how': 'အသုံးပြုပုံ', 'nav.proof': 'အတည်ပြုထားသော ခန့်မှန်းချက်', 'nav.faq': 'မေးခွန်းများ', 'nav.docs': 'လမ်းညွှန်',
     'hero.title': 'မှန်ကန်သော အသုတ်ကို အရင် အခြောက်ခံပါ။',
     'hero.sub': 'ရောက်လာသော စပါးအသုတ်များကို စီပါ၊ မိုးကို စစ်ပါ၊ အခြောက်ခံစက်ကို အလိုအပ်ဆုံး အသုတ်အား ပေးပါ။',
     'hero.open': 'လုပ်ငန်းခွင် ဖွင့်ရန်', 'hero.see': 'တကယ့် ခန့်မှန်းချက် ကြည့်ရန်',

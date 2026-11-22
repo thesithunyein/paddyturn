@@ -30,6 +30,7 @@ export default function Landing() {
         <a className="landing-nav" href="#how-it-works">{t('nav.how')}</a>
         <a className="landing-nav" href="#proof">{t('nav.proof')}</a>
         <a className="landing-nav" href="#faq">{t('nav.faq')}</a>
+        <Link className="landing-nav" href="/docs">{t('nav.docs')}</Link>
         <LanguageToggle />
       </nav>
     </header>
@@ -116,7 +117,7 @@ export default function Landing() {
       <Link href="/" className="brand home-link"><img src="/paddyturn.svg" alt="" width="32" height="32" /><strong>PaddyTurn</strong></Link>
       <nav className="landing-links" aria-label="Footer navigation">
         <Link href="/app">{t('foot.workspace')}</Link>
-        <a href="https://github.com/thesithunyein/paddyturn#readme">{t('foot.docs')}</a>
+        <Link href="/docs">{t('foot.docs')}</Link>
         <a href="https://github.com/thesithunyein/paddyturn/issues">{t('foot.issue')}</a>
         <a href="https://telegraphprotocol.com/">Telegraph</a>
       </nav>
