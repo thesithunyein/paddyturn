@@ -35,8 +35,9 @@ function ForecastEvidence({ forecast }: { forecast: Forecast }) {
   return <div className="forecast-evidence">
     {windowStart !== undefined && validUntil !== undefined &&
       <p>Forecast window: {new Date(windowStart).toLocaleString()} to {new Date(validUntil).toLocaleString()}</p>}
-    {location && <p>Location: {location}{when ? ` · ${when}` : ''}</p>}
-    {chance !== undefined && <p>Peak rain chance: {chance}%{condition ? ` · ${condition}` : ''}</p>}
+    {location && <p>Location: {location}</p>}
+    {when && <p>Provider forecast period starts: {when}</p>}
+    {chance !== undefined && <p>Peak rain chance in the provider’s period: {chance}%{condition ? ` · ${condition}` : ''}</p>}
     {threshold !== undefined && <p>Rain limit: {threshold}{unit}</p>}
     {peak !== undefined && <p>Peak hourly rain: {peak} mm</p>}
     {!!rain?.length && <p>Hourly rain: {rain.join(', ')} mm</p>}
