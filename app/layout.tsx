@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react'
 import '@fontsource-variable/manrope'
-import '@fontsource-variable/fraunces'
 import './style.css'
 import { LanguageProvider } from '../lib/i18n'
 

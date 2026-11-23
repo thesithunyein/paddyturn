@@ -316,6 +316,7 @@ export default function Dashboard() {
 
   return <main className="app">
     <header className="top"><Link href="/" className="brand home-link"><img src="/paddyturn.svg" alt="" width="40" height="40" /><strong>PaddyTurn</strong></Link><div className="top-tools"><span>{t('app.title')}</span><LanguageToggle /></div></header>
+    <h1 className="sr">{t('app.queueTitle')}</h1>
     {storageError && <p role="alert" className="error">{t('app.storageError')}</p>}
     {sample && <div className="sample-note" role="status"><span>{t('sample.note')}</span><a href="/app">{t('sample.start')} →</a></div>}
 
@@ -358,7 +359,7 @@ export default function Dashboard() {
       </div>
       {tab === 'queue' ? (ordered.length ? <div className="scroll"><table><thead><tr><th>{t('app.col.batch')}</th><th>{t('app.col.arrival')}</th><th>{t('app.col.moisture')}</th><th>{t('app.col.outdoor')}</th><th><span className="sr">{t('app.col.actions')}</span></th></tr></thead>
           <tbody>{ordered.map(batch => <tr key={batch.key}><th scope="row">{batch.id}</th><td>{batch.arrival}</td><td>{batch.moisture}%</td><td>{batch.outdoor ? <span className="tag">{t('app.eligible')}</span> : '—'}</td><td className="row-action"><button className="icon-button" aria-label={t('app.edit', { id: batch.id })} onClick={() => open(batch)}><Icon name="edit" /></button></td></tr>)}</tbody></table></div>
-        : <div className="empty"><div className="tile"><Icon name="queue" /></div><h3>{ready ? t('app.empty') : t('app.opening')}</h3><p>{t('app.emptyHint')}</p><button className="primary" disabled={!ready} onClick={() => open()}><Icon name="plus" /> {t('app.addFirst')}</button></div>)
+        : <div className="empty"><h3>{ready ? t('app.empty') : t('app.opening')}</h3><p>{t('app.emptyHint')}</p><button className="primary" disabled={!ready} onClick={() => open()}><Icon name="plus" /> {t('app.addFirst')}</button></div>)
       : (history.length ? <ul className="history-list">
           {history.map(item => <li key={item.batch.key} className="history-item">
             <div className="history-row">

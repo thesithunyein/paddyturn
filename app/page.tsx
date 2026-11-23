@@ -60,19 +60,6 @@ export default function Landing() {
     <section className="landing-weather" aria-labelledby="weather-title">
       <div className="weather-intro">
         <h2 id="weather-title">{t('wx.title')}</h2>
-        <div className="weather-scene" aria-hidden="true">
-          <div className="weather-object">
-            <span className="weather-depth" />
-            <span className="weather-face">
-              <svg width="44" height="44" viewBox="0 0 48 48" fill="none">
-                <circle cx="18" cy="17" r="8" fill="#e6be64" />
-                <path d="M18 5V2M6 17H3M9 8 6 5M28 8l3-3" stroke="#9a712e" strokeWidth="2" strokeLinecap="round" />
-                <path d="M17 33h19a7 7 0 1 0-1-14 9 9 0 0 0-17 5 4.5 4.5 0 0 0-1 9Z" fill="#fffdf4" stroke="#42694d" strokeWidth="2" />
-                <path d="m23 38-2 4m10-4-2 4" stroke="#42694d" strokeWidth="2" strokeLinecap="round" />
-              </svg>
-            </span>
-          </div>
-        </div>
       </div>
       <dl>
         {(['dry', 'rain', 'unsure'] as const).map(id => <div key={id}><dt>{t(`wx.${id}.t`)}</dt><dd>{t(`wx.${id}.d`)}</dd></div>)}
