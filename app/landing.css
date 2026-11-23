@@ -243,3 +243,39 @@
 .landing-copy p { max-width: 30ch }
 .landing-audience > div { padding: 14px 16px }
 .landing-audience h2 { margin-bottom: 3px }
+
+/* ---------- Design pass: spacing, alignment, hierarchy ---------- */
+/* Hero: tighter padding, softer surface, same width as the cards below. */
+.landing-hero {
+  margin: 28px 0 16px;
+  padding: clamp(24px, 4vw, 48px);
+  gap: clamp(28px, 4.5vw, 60px);
+  border: 0;
+  background: #edf1e5;
+  box-shadow: inset 0 0 0 1px #dfe6d6;
+}
+.landing-copy p { font-size: 1.04rem; color: #44574b }
+.landing-copy .landing-trust { font-size: .82rem; color: #44574b }
+
+/* Audience: aligned to the hero edges, flat cards with soft elevation. */
+.landing-audience { gap: 16px; padding: 0; margin-bottom: clamp(52px, 7vw, 92px) }
+.landing-audience > div { padding: 20px 22px; border: 0; border-radius: 16px; background: var(--surface); box-shadow: var(--shadow) }
+.landing-audience h2 { font-size: 1rem; margin-bottom: 4px }
+.landing-audience p { font-size: .9rem; color: var(--muted) }
+
+/* More room between sections. */
+.landing-steps, .landing-weather, .landing-proof, .landing-faq { margin-block: 0; padding-block: clamp(44px, 6vw, 80px) }
+.landing-steps h2, .landing-weather h2, .landing-proof h2, .landing-faq h2 { margin-bottom: 18px }
+.landing-steps ol { gap: 32px; margin-top: 8px }
+.landing-steps h3 { font-size: 1rem }
+.landing-steps p, .landing-weather dd, .proof-copy dd, .landing-questions p { font-size: .92rem; color: var(--muted) }
+.landing-faq { margin-top: 0 }
+
+/* Proof preview: one clear card with room to breathe. */
+.proof-sample { justify-items: stretch; max-width: 28rem; justify-self: end; width: 100% }
+.proof-sample .evidence { padding: 26px; gap: 14px }
+.proof-sample figcaption { font-size: .8rem }
+@media (max-width: 760px) {
+  .proof-sample { justify-self: stretch; max-width: none }
+  .landing-audience { margin-bottom: 40px }
+}
