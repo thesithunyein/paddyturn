@@ -78,7 +78,7 @@ export const messages = {
     'ev.chanceWindow': 'chance of rain, next {h} h', 'ev.chanceDay': 'chance of rain today', 'ev.peakHourly': 'peak hourly rain',
     'ev.rain': '{t}% or more. Keep it in the dryer queue.', 'ev.dry': 'Below {t}%. Safe to dry outside.',
     'ev.place': 'Place', 'ev.source': 'Source', 'ev.cost': 'Cost', 'ev.checked': 'Checked', 'ev.signal': 'Signal',
-    'ev.costValue': '{c} test USDC', 'ev.check': 'Check on Telegraph →', 'ev.tech': 'Technical details',
+    'ev.costValue': '{c} test USDC', 'ev.check': 'Check on Telegraph →', 'ev.tech': 'View receipt', 'fc.view': 'View rain check', 'dlg.done': 'Done', 'wx.label': 'Weather',
     'ev.copy': 'Copy', 'ev.copied': 'Copied',
 
     'pf.title': 'Forecast proof', 'pf.down': 'Telegraph is not responding', 'pf.downHint': 'Try again in a minute, or open the record directly.',
@@ -166,7 +166,7 @@ export const messages = {
     'ev.chanceWindow': 'နောက် {h} နာရီ မိုးရွာနိုင်ခြေ', 'ev.chanceDay': 'ယနေ့ မိုးရွာနိုင်ခြေ', 'ev.peakHourly': 'တစ်နာရီ အများဆုံး မိုးရေ',
     'ev.rain': '{t}% နှင့်အထက်။ အခြောက်ခံစက် စာရင်းတွင် ထားပါ။', 'ev.dry': '{t}% အောက်။ အပြင်လှန်းရန် စိတ်ချရသည်။',
     'ev.place': 'နေရာ', 'ev.source': 'ရင်းမြစ်', 'ev.cost': 'ကုန်ကျစရိတ်', 'ev.checked': 'စစ်ဆေးချိန်', 'ev.signal': 'Signal',
-    'ev.costValue': 'test USDC {c}', 'ev.check': 'Telegraph တွင် စစ်ဆေးရန် →', 'ev.tech': 'နည်းပညာ အသေးစိတ်',
+    'ev.costValue': 'test USDC {c}', 'ev.check': 'Telegraph တွင် စစ်ဆေးရန် →', 'ev.tech': 'ပြေစာ ကြည့်ရန်', 'fc.view': 'မိုးစစ်ဆေးချက် ကြည့်ရန်', 'dlg.done': 'ပြီးပါပြီ', 'wx.label': 'ရာသီဥတု',
     'ev.copy': 'ကူးရန်', 'ev.copied': 'ကူးပြီး',
 
     'pf.title': 'ခန့်မှန်းချက် အထောက်အထား', 'pf.down': 'Telegraph မှ တုံ့ပြန်မှု မရှိပါ', 'pf.downHint': 'တစ်မိနစ်ခန့်အကြာ ထပ်စမ်းပါ သို့မဟုတ် မှတ်တမ်းကို တိုက်ရိုက်ဖွင့်ပါ။',

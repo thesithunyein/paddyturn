@@ -48,7 +48,7 @@ function CopyValue({ label, value }: { label: string; value: string }) {
   </dd></div>
 }
 
-function ForecastEvidence({ forecast }: { forecast: Forecast }) {
+function ForecastEvidence({ forecast, flat }: { forecast: Forecast; flat?: boolean }) {
   const { evidence, peak, rain, windowStart, validUntil, threshold, chance, condition, when, location, weather,
     scope, dailyPeak, record, windowHours } = forecast
   const t = useT()
@@ -58,7 +58,7 @@ function ForecastEvidence({ forecast }: { forecast: Forecast }) {
   const unit = chance !== undefined || evidence?.billing === 'escrow' ? '%' : ' mm/h'
   const provider = evidence?.provider || evidence?.miner
   const usable = weather === 'dry' || weather === 'rain'
-  return <div className="evidence">
+  return <div className={flat ? 'evidence flat' : 'evidence'}>
     <div className="evidence-head">
       <span className={verified ? 'badge ok' : 'badge warn'}>{verified ? t('ev.verified') : t('ev.notVerified')}</span>
     </div>
@@ -120,6 +120,8 @@ export default function Dashboard() {
   const [joining, setJoining] = useState(false)
   const [syncError, setSyncError] = useState('')
   const pushTimer = useRef<number | undefined>(undefined)
+  const rainDialog = useRef<HTMLDialogElement>(null)
+  const openRain = () => { if (rainDialog.current && !rainDialog.current.open) rainDialog.current.showModal() }
   useEffect(() => {
     let local = initial
     try {
@@ -279,95 +281,106 @@ export default function Dashboard() {
     setAssigned(batch.id)
   }
 
-  return <main>
-    <header className="top"><Link href="/" className="brand home-link"><img src="/paddyturn.svg" alt="" width="42" height="42" /><strong>PaddyTurn</strong></Link><div className="top-tools"><span>{t('app.title')}</span><LanguageToggle /></div></header>
-    <div className="intro"><div><h1>{t('app.queueTitle')}</h1></div>
-      <button className="primary" disabled={!ready} onClick={() => { setTab('queue'); open() }}><Icon name="plus" /> {t('app.add')}</button></div>
+  const showWeather = baseline.needsWeather || batches.some(batch => batch.outdoor)
+  const answer = next?.id ?? (decision.review ? t('next.check') : outdoor.length ? t('next.outdoors') : '—')
+  const reason = !batches.length ? t('next.start') : decision.review ? forecast?.reason || t('next.review', { id: decision.baseline?.id ?? '' })
+    : outdoor.length ? t('next.outdoorList', { ids: outdoor.join(', ') }) : conditions === 'rain' && decision.baseline?.outdoor ? t('next.rainKeeps')
+    : priority === 'moisture' ? t('next.wettest') : t('next.first')
+
+  return <main className="app">
+    <header className="top"><Link href="/" className="brand home-link"><img src="/paddyturn.svg" alt="" width="40" height="40" /><strong>PaddyTurn</strong></Link><div className="top-tools"><span>{t('app.title')}</span><LanguageToggle /></div></header>
     {storageError && <p role="alert" className="error">{t('app.storageError')}</p>}
+
+    <section className="status" aria-live="polite">
+      <div className="status-main">
+        <p className="status-label">{t('next.title')}</p>
+        <p className="status-answer" key={next?.id ?? (decision.review ? 'review' : outdoor.length ? 'outdoor' : 'empty')}>{answer}</p>
+        <p className="status-reason">{reason}</p>
+        {next && <ul className="pills"><li>{t('next.moisture')} <strong>{next.moisture}%</strong></li><li>{t('next.arrival')} <strong>{next.arrival}</strong></li></ul>}
+      </div>
+      <div className="status-actions">
+        {next && <button className="primary on-dark" onClick={() => record(next)}><Icon name="check" /> {t('next.assign')}</button>}
+        {decision.review && <button className="primary on-dark" disabled={!ready} onClick={openRain}><Icon name="weather" /> {t('fc.title')}</button>}
+        {!decision.review && forecast?.evidence && <button className="ghost on-dark" onClick={openRain}>{t('fc.view')}</button>}
+        {showWeather && <div className="weather-switch" role="group" aria-label={t('wx.card')}>
+          <span>{t('wx.label')}</span>
+          <div className="segmented">{weatherOptions.map(option => <button key={option} disabled={!ready || checking} aria-pressed={!forecast && weather === option} onClick={() => {
+            setForecast(undefined)
+            save({ ...workspace, weather: option })
+          }}>{t(`wx.opt.${option}`)}</button>)}</div>
+        </div>}
+      </div>
+    </section>
+
     {assigned && <div className="assignment-notice" role="status">
       <span>{t('app.assigned', { id: assigned })}</span>
-      <button onClick={() => setTab('history')}>{t('app.viewHistory')}</button>
+      <button className="link-button" onClick={() => setTab('history')}>{t('app.viewHistory')}</button>
     </div>}
-    <div className={batches.length && tab === 'queue' ? 'grid queue-active' : 'grid'}>
-      <section className="card queue">
-        <div className="tabs" aria-label={t('app.tabs')}>
+
+    <section className="panel">
+      <div className="panel-head">
+        <div className="tabs" role="group" aria-label={t('app.tabs')}>
           <button aria-pressed={tab === 'queue'} onClick={() => setTab('queue')}>{t('app.tab.queue')} <span>{batches.length}</span></button>
           <button aria-pressed={tab === 'history'} onClick={() => setTab('history')}>{t('app.tab.history')} <span>{history.length}</span></button>
         </div>
-        {tab === 'queue' ? <>
-          <div className="section-bar"><h2>{t('app.waiting')}</h2><label>{t('app.sortBy')} <select disabled={!ready} value={priority} onChange={e => save({ ...workspace, priority: e.target.value as Priority })}><option value="moisture">{t('app.sort.moisture')}</option><option value="arrival">{t('app.sort.arrival')}</option></select></label></div>
-          {ordered.length ? <div className="scroll"><table><thead><tr><th>{t('app.col.batch')}</th><th>{t('app.col.arrival')}</th><th>{t('app.col.moisture')}</th><th>{t('app.col.outdoor')}</th><th><span className="sr">{t('app.col.actions')}</span></th></tr></thead>
-            <tbody>{ordered.map(batch => <tr key={batch.key}><th scope="row">{batch.id}</th><td>{batch.arrival}</td><td>{batch.moisture}%</td><td>{batch.outdoor ? t('app.eligible') : '—'}</td><td><button className="icon-button" aria-label={t('app.edit', { id: batch.id })} onClick={() => open(batch)}><Icon name="edit" /></button></td></tr>)}</tbody></table></div>
-            : <div className="empty"><div className="tile"><Icon name="queue" /></div><h3>{ready ? t('app.empty') : t('app.opening')}</h3><p>{t('app.emptyHint')}</p><button disabled={!ready} onClick={() => open()}>{t('app.addFirst')}</button></div>}
-        </> : <><div className="section-bar"><h2>{t('app.historyTitle')}</h2></div>{history.length ? <ul className="history-list">
+        <div className="panel-tools">
+          {tab === 'queue' && ordered.length > 1 && <label className="sort">{t('app.sortBy')} <select disabled={!ready} value={priority} onChange={e => save({ ...workspace, priority: e.target.value as Priority })}><option value="moisture">{t('app.sort.moisture')}</option><option value="arrival">{t('app.sort.arrival')}</option></select></label>}
+          <button className="secondary" disabled={!ready} onClick={() => { setTab('queue'); open() }}><Icon name="plus" /> {t('app.add')}</button>
+        </div>
+      </div>
+      {tab === 'queue' ? (ordered.length ? <div className="scroll"><table><thead><tr><th>{t('app.col.batch')}</th><th>{t('app.col.arrival')}</th><th>{t('app.col.moisture')}</th><th>{t('app.col.outdoor')}</th><th><span className="sr">{t('app.col.actions')}</span></th></tr></thead>
+          <tbody>{ordered.map(batch => <tr key={batch.key}><th scope="row">{batch.id}</th><td>{batch.arrival}</td><td>{batch.moisture}%</td><td>{batch.outdoor ? <span className="tag">{t('app.eligible')}</span> : '—'}</td><td className="row-action"><button className="icon-button" aria-label={t('app.edit', { id: batch.id })} onClick={() => open(batch)}><Icon name="edit" /></button></td></tr>)}</tbody></table></div>
+        : <div className="empty"><div className="tile"><Icon name="queue" /></div><h3>{ready ? t('app.empty') : t('app.opening')}</h3><p>{t('app.emptyHint')}</p><button className="primary" disabled={!ready} onClick={() => open()}><Icon name="plus" /> {t('app.addFirst')}</button></div>)
+      : (history.length ? <ul className="history-list">
           {history.map(item => <li key={item.batch.key} className="history-item">
             <div className="history-row">
               <strong>{item.batch.id}</strong>
               <span>{item.batch.moisture}% · {t('hist.dried')}</span>
               <time dateTime={item.at}>{new Date(item.at).toLocaleString([], { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</time>
             </div>
-            {item.forecast ? <details className="history-forecast"><summary>{t('app.viewEvidence')}</summary><ForecastEvidence forecast={item.forecast} /></details>
+            {item.forecast ? <details className="history-forecast"><summary>{t('app.viewEvidence')}</summary><ForecastEvidence forecast={item.forecast} flat /></details>
               : <p className="history-none">{t('hist.noForecast')}</p>}
           </li>)}
-          </ul> : <div className="empty"><h3>{t('app.noHistory')}</h3><p>{t('app.noHistoryHint')}</p></div>}</>}
-        <footer className="sync">
-          {millCode ? <>
-            <span>{sync === 'syncing' ? t('sync.syncing') : sync === 'error' ? t('sync.error') : activeDays === 1 ? t('sync.synced.one') : t('sync.synced', { n: activeDays })}</span>
-            <button type="button" className="link-button" onClick={disconnect}>{t('sync.leave')}</button>
-          </> : joining ? <form className="sync-form" onSubmit={joinMill}>
-            <label>{t('sync.code')}<input name="mill" type="password" autoComplete="off" minLength={10} maxLength={64} required /></label>
-            <button type="submit" disabled={sync === 'syncing'}>{sync === 'syncing' ? t('sync.syncing') : t('sync.connect')}</button>
-            <button type="button" className="link-button" onClick={() => { setJoining(false); setSyncError('') }}>{t('sync.cancel')}</button>
-            <p>{syncError || (sync === 'off' ? t('sync.off') : sync === 'error' ? t('sync.error') : t('sync.hint'))}</p>
-          </form> : <>
-            <span>{t('app.savedBrowser')}</span>
-            <button type="button" className="link-button" disabled={!ready} onClick={() => setJoining(true)}>{t('sync.use')}</button>
-          </>}
-        </footer>
-      </section>
-      <aside className="side">
-        <section className="card next" aria-live="polite">
-          <img className="mill" src="/mill.svg" alt="" />
-          <div className="next-copy"><h2>{t('next.title')}</h2>
-            <p className="answer" key={next?.id ?? (decision.review ? 'review' : outdoor.length ? 'outdoor' : 'empty')}>{next?.id ?? (decision.review ? t('next.check') : outdoor.length ? t('next.outdoors') : '—')}</p>
-            <p>{!batches.length ? t('next.start') : decision.review ? forecast?.reason || t('next.review', { id: decision.baseline?.id ?? '' }) : outdoor.length ? t('next.outdoorList', { ids: outdoor.join(', ') }) : conditions === 'rain' && decision.baseline?.outdoor ? t('next.rainKeeps') : priority === 'moisture' ? t('next.wettest') : t('next.first')}</p>
-            {decision.review && <a className="conditions-link" href="#outdoor-conditions">{t('next.setWeather')}</a>}
-            {next && <dl className="next-facts"><div><dt>{t('next.moisture')}</dt><dd>{next.moisture}%</dd></div><div><dt>{t('next.arrival')}</dt><dd>{next.arrival}</dd></div></dl>}
-            {next && <button className="primary" onClick={() => record(next)}><Icon name="check" /> {t('next.assign')}</button>}
-          </div>
-        </section>
-        <section id="outdoor-conditions" className="card weather" tabIndex={-1}><h2><Icon name="weather" /> {t('wx.card')}</h2>
-          <div className="weather-options">{weatherOptions.map(option => <button key={option} disabled={!ready || checking} aria-pressed={!forecast && weather === option} onClick={() => {
-            setForecast(undefined)
-            save({ ...workspace, weather: option })
-          }}>{t(`wx.opt.${option}`)}</button>)}</div>
-        <details className="rain-check forecast-panel" open={(baseline.needsWeather && weather === 'unknown') || undefined}>
-          <summary>{t('fc.title')}</summary>
-          <div className="forecast-panel-body">
-            <form onSubmit={checkForecast}>
-              <label>{t('fc.location')}<input name="location" type="text" minLength={2} maxLength={120} defaultValue="Pathein, Myanmar" required /></label>
-              <label>{t('fc.code')}<input name="token" type="password" autoComplete="off" required /><small>{t('fc.ask')}</small></label>
-              <details className="fc-more"><summary>{t('fc.more')}</summary>
-                <div className="fields">
-                  <label>{t('fc.window')}<input name="hours" type="number" min="1" max="6" defaultValue="3" required /></label>
-                  <label>{t('fc.limit')}<input name="threshold" type="number" min="1" max="100" step="1" defaultValue="40" required /></label>
-                </div>
-              </details>
-              <button type="submit" disabled={!baseline.needsWeather || checking}>{checking ? t('fc.checking') : t('fc.get')}</button>
-              {!baseline.needsWeather && <p>{t('fc.notNeeded')}</p>}
-            </form>
-            {forecast && <div className="forecast-result" aria-live="polite">
-              {(forecast.reason || conditions === 'unknown') && <p className="forecast-message">{forecast.reason || t('fc.unavailable')}</p>}
-              <ForecastEvidence forecast={forecast} />
-            </div>}
+        </ul> : <div className="empty"><h3>{t('app.noHistory')}</h3><p>{t('app.noHistoryHint')}</p></div>)}
+      <footer className="sync">
+        {millCode ? <>
+          <span>{sync === 'syncing' ? t('sync.syncing') : sync === 'error' ? t('sync.error') : activeDays === 1 ? t('sync.synced.one') : t('sync.synced', { n: activeDays })}</span>
+          <button type="button" className="link-button" onClick={disconnect}>{t('sync.leave')}</button>
+        </> : joining ? <form className="sync-form" onSubmit={joinMill}>
+          <label>{t('sync.code')}<input name="mill" type="password" autoComplete="off" minLength={10} maxLength={64} required /></label>
+          <button type="submit" className="secondary" disabled={sync === 'syncing'}>{sync === 'syncing' ? t('sync.syncing') : t('sync.connect')}</button>
+          <button type="button" className="link-button" onClick={() => { setJoining(false); setSyncError('') }}>{t('sync.cancel')}</button>
+          <p>{syncError || (sync === 'off' ? t('sync.off') : sync === 'error' ? t('sync.error') : t('sync.hint'))}</p>
+        </form> : <>
+          <span>{t('app.savedBrowser')}</span>
+          <button type="button" className="link-button" disabled={!ready} onClick={() => setJoining(true)}>{t('sync.use')}</button>
+        </>}
+      </footer>
+    </section>
+
+    <dialog ref={rainDialog} className="rain-dialog" aria-label={t('fc.title')}>
+      <div className="dialog-head"><h2>{t('fc.title')}</h2><button type="button" className="icon-button" aria-label={t('dlg.close')} onClick={() => rainDialog.current?.close()}><Icon name="close" /></button></div>
+      <form onSubmit={checkForecast} className="rain-form">
+        <label>{t('fc.location')}<input name="location" type="text" minLength={2} maxLength={120} defaultValue="Pathein, Myanmar" required /></label>
+        <label>{t('fc.code')}<input name="token" type="password" autoComplete="off" required /><small>{t('fc.ask')}</small></label>
+        <details className="fc-more"><summary>{t('fc.more')}</summary>
+          <div className="fields">
+            <label>{t('fc.window')}<input name="hours" type="number" min="1" max="6" defaultValue="3" required /></label>
+            <label>{t('fc.limit')}<input name="threshold" type="number" min="1" max="100" step="1" defaultValue="40" required /></label>
           </div>
         </details>
-        </section>
-      </aside>
-    </div>
+        <button type="submit" className="primary" disabled={!baseline.needsWeather || checking}>{checking ? t('fc.checking') : t('fc.get')}</button>
+        {!baseline.needsWeather && <p className="hint">{t('fc.notNeeded')}</p>}
+      </form>
+      {forecast && <div className="forecast-result" aria-live="polite">
+        {(forecast.reason || conditions === 'unknown') && <p className="forecast-message">{forecast.reason || t('fc.unavailable')}</p>}
+        <ForecastEvidence forecast={forecast} flat />
+        {forecast.evidence && <button type="button" className="secondary" onClick={() => rainDialog.current?.close()}>{t('dlg.done')}</button>}
+      </div>}
+    </dialog>
     {editing && <dialog ref={dialog} aria-label={editing.key ? t('dlg.edit') : t('dlg.add')} onCancel={() => setEditing(null)}>
       <form onSubmit={submit}>
-        <div className="section-bar"><h2>{editing.key ? t('dlg.edit') : t('dlg.add')}</h2><button type="button" className="icon-button" aria-label={t('dlg.close')} onClick={() => setEditing(null)}><Icon name="close" /></button></div>
+        <div className="dialog-head"><h2>{editing.key ? t('dlg.edit') : t('dlg.add')}</h2><button type="button" className="icon-button" aria-label={t('dlg.close')} onClick={() => setEditing(null)}><Icon name="close" /></button></div>
         <label>{t('dlg.id')}<input name="id" required autoFocus maxLength={32} defaultValue={editing.id} placeholder={t('dlg.idHint')} /></label>
         <div className="fields"><label>{t('dlg.arrival')}<input name="arrival" type="time" required defaultValue={editing.arrival} /></label>
           <label>{t('dlg.moisture')}<input name="moisture" type="number" min="0" max="100" step="0.1" required defaultValue={Number.isFinite(editing.moisture) ? editing.moisture : ''} /></label></div>
