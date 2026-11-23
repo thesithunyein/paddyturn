@@ -254,3 +254,11 @@ input, select { max-width: 100% }
 .fc-more .fields { margin-top: 10px }
 @media (max-width: 560px) { .history-row time { margin-left: 0; flex-basis: 100% } }
 :lang(my) main > .intro h1 { font-size: clamp(1.6rem, 3.2vw, 2.4rem) }
+
+/* Rain check lives inside the weather card */
+.weather .rain-check { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line) }
+.weather .rain-check > summary { cursor: pointer; color: var(--green); font-weight: 700 }
+.weather .forecast-panel-body { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 14px }
+.weather .forecast-panel-body form { display: grid; gap: 12px; max-width: none }
+.weather .forecast-panel-body form > button[type=submit] { justify-self: start }
+.weather .evidence { max-width: none }
