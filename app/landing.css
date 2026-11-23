@@ -337,3 +337,14 @@
   .landing .top { flex-wrap: wrap; row-gap: 10px }
   .landing-links { gap: 8px 16px }
 }
+
+/* ---------- De-template pass ---------- */
+.landing h2, .landing-steps h2, .landing-faq h2, .landing-weather h2, .landing-proof h2 { font-weight: 800; letter-spacing: -.03em }
+.landing-hero h1 { font-weight: 800; letter-spacing: -.035em }
+/* No card inside the hero card: the illustration sits directly on the hero surface. */
+.drying-floor-frame { padding: 0; background: none; border: 0; box-shadow: none }
+.drying-floor-frame .drying-floor { border-radius: 14px }
+.landing-audience > div { background: var(--surface) }
+.scene-pill { background: #fff }
+@media (max-width: 760px) { .scene-pill { font-size: .76rem } }
+.weather-intro { display: block }

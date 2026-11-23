@@ -3,14 +3,14 @@
 
 /* ---------- Tokens ---------- */
 :root {
-  --display: 'Fraunces Variable', Georgia, serif;
+  --display: 'Manrope Variable', system-ui, sans-serif;
   --ink: #1c3326;
   --muted: #4d5e53;          /* secondary text, ~6:1 on the background */
   --faint: #6b7a70;
-  --line: #e6e0d0;
-  --line-soft: #efeadc;
-  --bg: #faf8ef;
-  --surface: #fffdf8;
+  --line: #e1e5de;
+  --line-soft: #eaede7;
+  --bg: #f4f6f2;
+  --surface: #ffffff;
   --green: #244c37;
   --green-soft: #e4eedf;
   --grain: #f7e5ad;
@@ -69,7 +69,7 @@ button:hover:not(:disabled) { filter: brightness(.97) }
   margin: 36px 0 20px; padding: clamp(24px, 4vw, 36px);
   border-radius: 22px; background: var(--green); color: #fffaf0; box-shadow: 0 18px 40px -26px #1c3326aa;
 }
-.status-label { font-size: .78rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #c9d8c6 }
+.status-label { font-size: .78rem; font-weight: 700; color: #c9d8c6 }
 .status-answer { margin-top: 6px; font-family: var(--display); font-weight: 590; font-size: clamp(2.2rem, 5vw, 3.4rem); line-height: 1.05; letter-spacing: -.04em; color: var(--grain); overflow-wrap: anywhere }
 .status-reason { margin-top: 10px; max-width: 46ch; color: #e3eadb; font-size: .95rem }
 .pills { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 0; padding: 0; list-style: none }
@@ -79,7 +79,7 @@ button:hover:not(:disabled) { filter: brightness(.97) }
 .primary.on-dark { border-color: var(--grain); background: var(--grain); color: var(--green) }
 .ghost.on-dark { border-color: #ffffff40; background: transparent; color: #fffaf0 }
 .weather-switch { display: grid; gap: 6px; justify-items: end }
-.weather-switch > span { font-size: .74rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #c9d8c6 }
+.weather-switch > span { font-size: .74rem; font-weight: 700; color: #c9d8c6 }
 .segmented { display: inline-flex; padding: 3px; border-radius: 12px; background: #ffffff17 }
 .segmented button { border: 0; border-radius: 9px; padding: 7px 12px; background: transparent; color: #e3eadb; font-size: .82rem }
 .segmented button[aria-pressed=true] { background: #fffaf0; color: var(--green) }
@@ -98,7 +98,7 @@ button:hover:not(:disabled) { filter: brightness(.97) }
 .scroll { overflow-x: auto }
 table { width: 100%; border-collapse: collapse; text-align: left; font-size: .92rem; font-variant-numeric: tabular-nums }
 th, td { padding: 14px 18px; border-bottom: 1px solid var(--line-soft); white-space: nowrap }
-thead th { padding-block: 10px; color: var(--faint); font-size: .74rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase }
+thead th { padding-block: 10px; color: var(--faint); font-size: .74rem; font-weight: 700 }
 tbody th { font-weight: 700 }
 tbody tr:last-child > * { border-bottom: 0 }
 .row-action { width: 1%; text-align: right }
@@ -169,7 +169,7 @@ dialog .check { display: flex; align-items: center; gap: 8px; margin: 16px 0 }
 .evidence.flat .verdict.dry { background: #e2ecdc }
 .evidence-meta { color: var(--muted); font-size: .86rem }
 .evidence-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 16px; margin: 0 }
-.evidence-facts dt { color: var(--faint); font-size: .74rem; text-transform: uppercase; letter-spacing: .06em; font-weight: 700 }
+.evidence-facts dt { color: var(--faint); font-size: .74rem; font-weight: 700 }
 .evidence-facts dd { margin: 2px 0 0; font-weight: 600; overflow-wrap: anywhere }
 .evidence-link { justify-self: start; display: inline-flex; align-items: center; padding: 9px 16px; border-radius: 10px; background: var(--green); color: #fffaf0; font-weight: 700; font-size: .88rem; text-decoration: none }
 .evidence-link:hover { filter: brightness(1.12) }
@@ -177,7 +177,7 @@ dialog .check { display: flex; align-items: center; gap: 8px; margin: 16px 0 }
 .evidence-tech > summary { cursor: pointer; color: var(--muted); font-weight: 650 }
 .evidence-tech dl { display: grid; gap: 8px; margin: 12px 0 0 }
 .tech-row { display: grid; grid-template-columns: 8.5rem minmax(0, 1fr); gap: 10px; align-items: center }
-.tech-row dt { color: var(--faint); font-size: .74rem; text-transform: uppercase; letter-spacing: .06em; font-weight: 700 }
+.tech-row dt { color: var(--faint); font-size: .74rem; font-weight: 700 }
 .tech-row dd { margin: 0; display: flex; align-items: center; gap: 8px; min-width: 0; overflow-wrap: anywhere }
 .tech-row code { font-size: .8rem }
 .copy { padding: 3px 9px; font-size: .74rem; border-radius: 7px }
@@ -191,7 +191,7 @@ dialog .check { display: flex; align-items: center; gap: 8px; margin: 16px 0 }
 .proof-block h2 { font-size: .96rem; margin: 0 0 12px }
 .proof-days { width: 100%; border-collapse: collapse; font-size: .9rem }
 .proof-days th, .proof-days td { text-align: left; padding: 9px 6px; border-bottom: 1px solid var(--line-soft) }
-.proof-days thead th { color: var(--faint); font-size: .74rem; text-transform: uppercase; letter-spacing: .05em }
+.proof-days thead th { color: var(--faint); font-size: .74rem; }
 .proof-hours { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; align-items: end; gap: 3px; height: 90px; padding: 6px; border-radius: 10px; background: #f3f5ee }
 .proof-hours span { height: 100%; display: flex; align-items: end }
 .proof-hours i { display: block; width: 100%; border-radius: 3px 3px 0 0; background: #6f93b5 }
@@ -246,3 +246,17 @@ dialog .check { display: flex; align-items: center; gap: 8px; margin: 16px 0 }
 .sample-note { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 16px; margin-top: 24px; padding: 12px 18px; border-radius: 14px; background: #f7ecd0; color: #5e4514; font-size: .9rem; font-weight: 600 }
 .sample-note a { color: var(--green); font-weight: 700 }
 .sample-note + .status { margin-top: 16px }
+
+/* ---------- De-template pass ----------
+   Sentence-case labels instead of tracked uppercase kickers, one sans family
+   with weight for hierarchy, white surfaces on a neutral background. */
+h1 { font-weight: 800; letter-spacing: -.035em; line-height: 1.06 }
+.status-answer { font-weight: 800; letter-spacing: -.03em }
+.evidence-figure strong { font-weight: 800; letter-spacing: -.03em }
+.status-label, .weather-switch > span, thead th, .proof-days thead th, .evidence-facts dt, .tech-row dt {
+  text-transform: none; letter-spacing: 0; font-size: .82rem; font-weight: 600
+}
+.status-label { color: #d5e2d2 }
+.weather-switch > span { color: #d5e2d2 }
+thead th { color: var(--muted) }
+.evidence-facts dt, .tech-row dt { color: var(--muted) }
