@@ -51,7 +51,7 @@ export const docs: Record<Lang, Docs> = {
         </ol>
         <p>If the record is not published yet, PaddyTurn uses the provider’s daily peak and labels it. If anything cannot be verified, it asks you to check the sky instead of guessing.</p></> },
       { id: 'verify', title: 'Verify a forecast', body: <>
-        <p>In <strong>History → View evidence</strong>, choose <strong>Check on Telegraph</strong>. The proof page shows the verification, place, provider, cost and hourly rain chance, with a link to the raw record.</p>
+        <p>In <strong>History → Weather proof</strong>, choose <strong>Check on Telegraph</strong>. The proof page shows the verification, place, provider, cost and hourly rain chance, with a link to the raw record.</p>
         <p>Example: <Link href={`/proof/${proof}`}>a real check for Pathein, 22 Nov 2026</Link>. Or check it from a terminal:</p>
         <pre><code>{code.curl}</code></pre></> },
       { id: 'sync', title: 'Sync devices', body: <>
@@ -109,7 +109,7 @@ export const docs: Record<Lang, Docs> = {
         </ol>
         <p>မှတ်တမ်း မထုတ်ပြန်ရသေးလျှင် ပံ့ပိုးသူ၏ တစ်နေ့တာ အမြင့်ဆုံးတန်ဖိုးကို သုံးပြီး ထိုသို့ ဖော်ပြသည်။ တစ်ခုခု အတည်မပြုနိုင်ပါက မှန်းဆမည် မဟုတ်ဘဲ ကောင်းကင်ကို ကိုယ်တိုင်စစ်ရန် ပြောမည်။</p></> },
       { id: 'verify', title: 'ခန့်မှန်းချက်ကို စစ်ဆေးရန်', body: <>
-        <p><strong>မှတ်တမ်း → အထောက်အထား ကြည့်ရန်</strong> တွင် <strong>Telegraph တွင် စစ်ဆေးရန်</strong> ကို ရွေးပါ။ အထောက်အထား စာမျက်နှာတွင် အတည်ပြုချက်၊ နေရာ၊ ပံ့ပိုးသူ၊ ကုန်ကျစရိတ်နှင့် နာရီအလိုက် မိုးရွာနိုင်ခြေကို မူရင်းမှတ်တမ်း လင့်ခ်နှင့်အတူ ပြသည်။</p>
+        <p><strong>မှတ်တမ်း → ရာသီဥတု အထောက်အထား</strong> တွင် <strong>Telegraph တွင် စစ်ဆေးရန်</strong> ကို ရွေးပါ။ အထောက်အထား စာမျက်နှာတွင် အတည်ပြုချက်၊ နေရာ၊ ပံ့ပိုးသူ၊ ကုန်ကျစရိတ်နှင့် နာရီအလိုက် မိုးရွာနိုင်ခြေကို မူရင်းမှတ်တမ်း လင့်ခ်နှင့်အတူ ပြသည်။</p>
         <p>ဥပမာ - <Link href={`/proof/${proof}`}>ပုသိမ်အတွက် တကယ့် စစ်ဆေးချက် (၂၀၂၆ နိုဝင်ဘာ ၂၂)</Link>။ သို့မဟုတ် terminal မှ စစ်ပါ -</p>
         <pre><code>{code.curl}</code></pre></> },
       { id: 'sync', title: 'စက်များ ချိတ်ဆက်ရန်', body: <>

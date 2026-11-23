@@ -155,7 +155,7 @@ input, select { max-width: 100% }
   to { opacity: 1; transform: translateY(0) }
 }
 
-.history-forecast summary { cursor: pointer; color: var(--green); font-weight: 650 }
+.history-forecast summary { cursor: pointer; color: var(--green); font-weight: 650; font-size: .9rem }
 
 /* Forecast evidence card */
 .forecast-message { margin: 0 0 12px; color: var(--muted) }
@@ -234,3 +234,23 @@ input, select { max-width: 100% }
 .sync-form label { display: grid; gap: 4px; flex: 1 1 14rem }
 .sync-form input { width: 100% }
 .sync-form p { flex-basis: 100%; margin: 0; color: var(--muted); font-size: .8rem }
+
+/* Simpler workspace for mill operators */
+.app-page h1, main > .intro h1 { font-size: clamp(2.1rem, 4.6vw, 3.3rem) }
+.evidence { gap: 12px }
+.evidence-meta { margin: 0; color: var(--muted); font-size: .84rem; line-height: 1.5 }
+.history-list { list-style: none; margin: 0; padding: 0 }
+.history-item { padding: 14px 21px; border-bottom: 1px solid var(--line) }
+.history-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px }
+.history-row strong { font-size: 1rem }
+.history-row span { color: var(--muted) }
+.history-row time { margin-left: auto; color: var(--muted); font-size: .85rem; font-variant-numeric: tabular-nums }
+.history-item .history-forecast { margin-top: 8px }
+.history-item .history-forecast[open] .evidence { margin-top: 10px; max-width: 34rem }
+.history-none { margin: 6px 0 0; color: var(--muted); font-size: .84rem }
+.forecast-panel-body form > label small { display: block; margin-top: 4px; color: var(--muted); font-weight: 400; font-size: .78rem }
+.fc-more { margin: 4px 0 2px }
+.fc-more summary { cursor: pointer; color: var(--muted); font-size: .86rem; font-weight: 650 }
+.fc-more .fields { margin-top: 10px }
+@media (max-width: 560px) { .history-row time { margin-left: 0; flex-basis: 100% } }
+:lang(my) main > .intro h1 { font-size: clamp(1.6rem, 3.2vw, 2.4rem) }
