@@ -98,7 +98,7 @@ button:hover:not(:disabled) { filter: brightness(.97) }
 .scroll { overflow-x: auto }
 table { width: 100%; border-collapse: collapse; text-align: left; font-size: .92rem; font-variant-numeric: tabular-nums }
 th, td { padding: 14px 18px; border-bottom: 1px solid var(--line-soft); white-space: nowrap }
-thead th { padding-block: 10px; color: var(--faint); font-size: .74rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase }
+thead th { padding-block: 10px; color: var(--faint); font-size: .74rem; font-weight: 700 }
 tbody th { font-weight: 700 }
 tbody tr:last-child > * { border-bottom: 0 }
 .row-action { width: 1%; text-align: right }
