@@ -88,18 +88,12 @@ export default function Landing() {
         <div className="evidence">
           <div className="evidence-head">
             <span className="badge ok">{t('ev.verified')}</span>
-            <span className="badge net">{t('ev.testnet')}</span>
           </div>
           <div className="evidence-main">
             <p className="evidence-figure"><strong>0%</strong><span>{t('ev.chanceDay')} · clear</span></p>
             <p className="verdict dry">{t('proof.sample')}</p>
           </div>
-          <dl className="evidence-facts">
-            <div><dt>{t('ev.place')}</dt><dd>Pathein, Myanmar</dd></div>
-            <div><dt>{t('ev.source')}</dt><dd>Isobar Weather</dd></div>
-            <div><dt>{t('ev.cost')}</dt><dd>{t('ev.costValue', { c: 0.01 })}</dd></div>
-            <div><dt>{t('ev.signal')}</dt><dd><code>0xd06ae8…e1ee46</code></dd></div>
-          </dl>
+          <p className="evidence-meta">Pathein · Isobar Weather · {t('ev.costValue', { c: 0.01 })} · {t('ev.netNote')}</p>
           <a className="evidence-link" href={proofUrl}>{t('ev.check')}</a>
         </div>
       </figure>

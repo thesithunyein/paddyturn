@@ -61,9 +61,6 @@ function ForecastEvidence({ forecast }: { forecast: Forecast }) {
   return <div className="evidence">
     <div className="evidence-head">
       <span className={verified ? 'badge ok' : 'badge warn'}>{verified ? t('ev.verified') : t('ev.notVerified')}</span>
-      {record === 'verified' && <span className="badge ok">{t('ev.recordChecked')}</span>}
-      {record === 'pending' && <span className="badge net">{t('ev.recordPending')}</span>}
-      <span className="badge net">{t('ev.testnet')}</span>
     </div>
     {chance !== undefined && <div className="evidence-main">
       <p className="evidence-figure"><strong>{chance}%</strong><span>{scope === 'window' && windowHours
@@ -72,17 +69,18 @@ function ForecastEvidence({ forecast }: { forecast: Forecast }) {
         {weather === 'rain' ? t('ev.rain', { t: threshold }) : t('ev.dry', { t: threshold })}</p>}
     </div>}
     {chance === undefined && peak !== undefined && <p className="evidence-figure"><strong>{peak} mm</strong><span>{t('ev.peakHourly')}</span></p>}
-    <dl className="evidence-facts">
-      {location && <div><dt>{t('ev.place')}</dt><dd>{location}</dd></div>}
-      {provider && <div><dt>{t('ev.source')}</dt><dd>{provider}</dd></div>}
-      {typeof evidence?.cost === 'number' && <div><dt>{t('ev.cost')}</dt><dd>{t('ev.costValue', { c: evidence.cost })}</dd></div>}
-      {windowStart !== undefined && <div><dt>{t('ev.checked')}</dt><dd>{new Date(windowStart).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</dd></div>}
-    </dl>
+    <p className="evidence-meta">{[location?.split(',')[0], provider,
+      typeof evidence?.cost === 'number' ? t('ev.costValue', { c: evidence.cost }) : undefined,
+      windowStart !== undefined ? new Date(windowStart).toLocaleString([], { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : undefined,
+    ].filter(Boolean).join(' · ')}</p>
     {evidence?.signalHash && <a className="evidence-link" href={signalUrl(evidence.signalHash)} target="_blank" rel="noreferrer">
       {t('ev.check')}</a>}
     {evidence && <details className="evidence-tech">
       <summary>{t('ev.tech')}</summary>
       <dl>
+        <div className="tech-row"><dt>Network</dt><dd>{t('ev.netNote')}</dd></div>
+        {record && record !== 'none' && <div className="tech-row"><dt>Public record</dt><dd>{record === 'verified' ? t('ev.recordChecked') : record === 'pending' ? t('ev.recordPending') : record}</dd></div>}
+        {location && <div className="tech-row"><dt>Place</dt><dd>{location}</dd></div>}
         {evidence.intent && <div className="tech-row"><dt>Intent</dt><dd><code>{evidence.intent}</code></dd></div>}
         {evidence.minerId && <div className="tech-row"><dt>Miner</dt><dd>{evidence.minerId}</dd></div>}
         {receipts.map(receipt => <CopyValue key={receipt} label="Receipt" value={receipt} />)}
@@ -301,9 +299,17 @@ export default function Dashboard() {
           {ordered.length ? <div className="scroll"><table><thead><tr><th>{t('app.col.batch')}</th><th>{t('app.col.arrival')}</th><th>{t('app.col.moisture')}</th><th>{t('app.col.outdoor')}</th><th><span className="sr">{t('app.col.actions')}</span></th></tr></thead>
             <tbody>{ordered.map(batch => <tr key={batch.key}><th scope="row">{batch.id}</th><td>{batch.arrival}</td><td>{batch.moisture}%</td><td>{batch.outdoor ? t('app.eligible') : '—'}</td><td><button className="icon-button" aria-label={t('app.edit', { id: batch.id })} onClick={() => open(batch)}><Icon name="edit" /></button></td></tr>)}</tbody></table></div>
             : <div className="empty"><div className="tile"><Icon name="queue" /></div><h3>{ready ? t('app.empty') : t('app.opening')}</h3><p>{t('app.emptyHint')}</p><button disabled={!ready} onClick={() => open()}>{t('app.addFirst')}</button></div>}
-        </> : <><div className="section-bar"><h2>{t('app.historyTitle')}</h2></div>{history.length ? <div className="scroll"><table><thead><tr><th>{t('app.col.batch')}</th><th>{t('app.col.moisture')}</th><th>{t('app.col.assignedAt')}</th><th>{t('app.col.forecast')}</th></tr></thead><tbody>
-          {history.map(item => <tr key={item.batch.key}><th scope="row">{item.batch.id}</th><td>{item.batch.moisture}%</td><td>{new Date(item.at).toLocaleString()}</td><td>{item.forecast ? <details className="history-forecast"><summary>{t('app.viewEvidence')}</summary><ForecastEvidence forecast={item.forecast} /></details> : "—"}</td></tr>)}
-          </tbody></table></div> : <div className="empty"><h3>{t('app.noHistory')}</h3><p>{t('app.noHistoryHint')}</p></div>}</>}
+        </> : <><div className="section-bar"><h2>{t('app.historyTitle')}</h2></div>{history.length ? <ul className="history-list">
+          {history.map(item => <li key={item.batch.key} className="history-item">
+            <div className="history-row">
+              <strong>{item.batch.id}</strong>
+              <span>{item.batch.moisture}% · {t('hist.dried')}</span>
+              <time dateTime={item.at}>{new Date(item.at).toLocaleString([], { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</time>
+            </div>
+            {item.forecast ? <details className="history-forecast"><summary>{t('app.viewEvidence')}</summary><ForecastEvidence forecast={item.forecast} /></details>
+              : <p className="history-none">{t('hist.noForecast')}</p>}
+          </li>)}
+          </ul> : <div className="empty"><h3>{t('app.noHistory')}</h3><p>{t('app.noHistoryHint')}</p></div>}</>}
         <footer className="sync">
           {millCode ? <>
             <span>{sync === 'syncing' ? t('sync.syncing') : sync === 'error' ? t('sync.error') : activeDays === 1 ? t('sync.synced.one') : t('sync.synced', { n: activeDays })}</span>
@@ -342,13 +348,14 @@ export default function Dashboard() {
       <summary>{t('fc.title')}</summary>
       <div className="forecast-panel-body">
         <form onSubmit={checkForecast}>
-          <div className="fields">
-            <label>{t('fc.location')}<input name="location" type="text" minLength={2} maxLength={120} defaultValue="Pathein, Myanmar" required /></label>
-            <label>{t('fc.window')}<input name="hours" type="number" min="1" max="6" defaultValue="3" required /></label>
-            <label>{t('fc.limit')}<input name="threshold" type="number" min="1" max="100" step="1" defaultValue="40" required /></label>
-          </div>
-          <p>{t('fc.ask')}</p>
-          <label>{t('fc.code')}<input name="token" type="password" autoComplete="off" required /></label>
+          <label>{t('fc.location')}<input name="location" type="text" minLength={2} maxLength={120} defaultValue="Pathein, Myanmar" required /></label>
+          <label>{t('fc.code')}<input name="token" type="password" autoComplete="off" required /><small>{t('fc.ask')}</small></label>
+          <details className="fc-more"><summary>{t('fc.more')}</summary>
+            <div className="fields">
+              <label>{t('fc.window')}<input name="hours" type="number" min="1" max="6" defaultValue="3" required /></label>
+              <label>{t('fc.limit')}<input name="threshold" type="number" min="1" max="100" step="1" defaultValue="40" required /></label>
+            </div>
+          </details>
           <button type="submit" disabled={!baseline.needsWeather || checking}>{checking ? t('fc.checking') : t('fc.get')}</button>
           {!baseline.needsWeather && <p>{t('fc.notNeeded')}</p>}
         </form>
