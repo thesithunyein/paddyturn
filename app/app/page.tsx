@@ -341,30 +341,30 @@ export default function Dashboard() {
             setForecast(undefined)
             save({ ...workspace, weather: option })
           }}>{t(`wx.opt.${option}`)}</button>)}</div>
+        <details className="rain-check forecast-panel" open={(baseline.needsWeather && weather === 'unknown') || undefined}>
+          <summary>{t('fc.title')}</summary>
+          <div className="forecast-panel-body">
+            <form onSubmit={checkForecast}>
+              <label>{t('fc.location')}<input name="location" type="text" minLength={2} maxLength={120} defaultValue="Pathein, Myanmar" required /></label>
+              <label>{t('fc.code')}<input name="token" type="password" autoComplete="off" required /><small>{t('fc.ask')}</small></label>
+              <details className="fc-more"><summary>{t('fc.more')}</summary>
+                <div className="fields">
+                  <label>{t('fc.window')}<input name="hours" type="number" min="1" max="6" defaultValue="3" required /></label>
+                  <label>{t('fc.limit')}<input name="threshold" type="number" min="1" max="100" step="1" defaultValue="40" required /></label>
+                </div>
+              </details>
+              <button type="submit" disabled={!baseline.needsWeather || checking}>{checking ? t('fc.checking') : t('fc.get')}</button>
+              {!baseline.needsWeather && <p>{t('fc.notNeeded')}</p>}
+            </form>
+            {forecast && <div className="forecast-result" aria-live="polite">
+              {(forecast.reason || conditions === 'unknown') && <p className="forecast-message">{forecast.reason || t('fc.unavailable')}</p>}
+              <ForecastEvidence forecast={forecast} />
+            </div>}
+          </div>
+        </details>
         </section>
       </aside>
     </div>
-    <details className="card forecast forecast-panel">
-      <summary>{t('fc.title')}</summary>
-      <div className="forecast-panel-body">
-        <form onSubmit={checkForecast}>
-          <label>{t('fc.location')}<input name="location" type="text" minLength={2} maxLength={120} defaultValue="Pathein, Myanmar" required /></label>
-          <label>{t('fc.code')}<input name="token" type="password" autoComplete="off" required /><small>{t('fc.ask')}</small></label>
-          <details className="fc-more"><summary>{t('fc.more')}</summary>
-            <div className="fields">
-              <label>{t('fc.window')}<input name="hours" type="number" min="1" max="6" defaultValue="3" required /></label>
-              <label>{t('fc.limit')}<input name="threshold" type="number" min="1" max="100" step="1" defaultValue="40" required /></label>
-            </div>
-          </details>
-          <button type="submit" disabled={!baseline.needsWeather || checking}>{checking ? t('fc.checking') : t('fc.get')}</button>
-          {!baseline.needsWeather && <p>{t('fc.notNeeded')}</p>}
-        </form>
-        {forecast && <div className="forecast-result" aria-live="polite">
-          {(forecast.reason || conditions === 'unknown') && <p className="forecast-message">{forecast.reason || t('fc.unavailable')}</p>}
-          <ForecastEvidence forecast={forecast} />
-        </div>}
-      </div>
-    </details>
     {editing && <dialog ref={dialog} aria-label={editing.key ? t('dlg.edit') : t('dlg.add')} onCancel={() => setEditing(null)}>
       <form onSubmit={submit}>
         <div className="section-bar"><h2>{editing.key ? t('dlg.edit') : t('dlg.add')}</h2><button type="button" className="icon-button" aria-label={t('dlg.close')} onClick={() => setEditing(null)}><Icon name="close" /></button></div>
