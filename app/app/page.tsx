@@ -23,6 +23,27 @@ type Sync = 'local' | 'syncing' | 'synced' | 'error' | 'off'
 const initial: Workspace = { batches: [], history: [], priority: 'moisture', weather: 'unknown' }
 const weatherOptions = ['unknown', 'dry', 'rain'] as const
 
+// Sample mill for /app?sample=1. Kept in memory only, so it never replaces a
+// mill's saved queue. The Weather Log entry is the real Pathein check from the
+// production workspace (22 Nov 2026, Telegraph test network).
+const sampleSignal = '0xd06ae8c038d83ecd2c1fc631210b7e87dad9cdb618abca1547b43d2056e1ee46'
+const sampleCheck = Date.parse('2026-11-22T15:16:57Z')
+const sampleWorkspace: Workspace = {
+  priority: 'moisture', weather: 'dry',
+  batches: [
+    { key: 'sample-01', id: '#01', arrival: '07:40', moisture: 26, outdoor: true },
+    { key: 'sample-02', id: '#02', arrival: '08:15', moisture: 24, outdoor: false },
+    { key: 'sample-03', id: '#03', arrival: '09:05', moisture: 21, outdoor: true },
+  ],
+  history: [{
+    batch: { key: 'sample-00', id: '#00', arrival: '06:30', moisture: 18, outdoor: false }, at: '2026-11-22T15:17:59Z',
+    forecast: { weather: 'dry', chance: 0, condition: 'clear', location: 'Pathein, Ayeyarwady, Myanmar', threshold: 40,
+      windowStart: sampleCheck, validUntil: sampleCheck + 3 * 3_600_000,
+      evidence: { billing: 'escrow', intent: 'WEATHER_FORECAST_GENERAL', provider: 'Isobar Weather', minerId: '279', cost: 0.01,
+        signalHash: sampleSignal, receipts: ['0xf758e1096487afe08aa42dcd0174c006b83f2f82fe0d4ad52230f589de6a856f'] } },
+  }],
+}
+
 function Icon({ name }: { name: 'plus' | 'queue' | 'weather' | 'edit' | 'check' | 'close' }) {
   const paths = {
     plus: 'M12 5v14M5 12h14', queue: 'M4 6h16M4 12h16M4 18h10',
@@ -119,10 +140,15 @@ export default function Dashboard() {
   const [activeDays, setActiveDays] = useState(0)
   const [joining, setJoining] = useState(false)
   const [syncError, setSyncError] = useState('')
+  const [sample, setSample] = useState(false)
   const pushTimer = useRef<number | undefined>(undefined)
   const rainDialog = useRef<HTMLDialogElement>(null)
   const openRain = () => { if (rainDialog.current && !rainDialog.current.open) rainDialog.current.showModal() }
   useEffect(() => {
+    if (new URLSearchParams(window.location.search).has('sample')) {
+      setSample(true); setWorkspace(sampleWorkspace); setReady(true)
+      return
+    }
     let local = initial
     try {
       const data = localStorage.getItem(storageKey)
@@ -193,6 +219,7 @@ export default function Dashboard() {
   }, [editing])
 
   function save(next: Workspace) {
+    if (sample) { setWorkspace(next); return }
     try {
       localStorage.setItem(storageKey, JSON.stringify(next))
       setStorageError(false)
@@ -290,6 +317,7 @@ export default function Dashboard() {
   return <main className="app">
     <header className="top"><Link href="/" className="brand home-link"><img src="/paddyturn.svg" alt="" width="40" height="40" /><strong>PaddyTurn</strong></Link><div className="top-tools"><span>{t('app.title')}</span><LanguageToggle /></div></header>
     {storageError && <p role="alert" className="error">{t('app.storageError')}</p>}
+    {sample && <div className="sample-note" role="status"><span>{t('sample.note')}</span><a href="/app">{t('sample.start')} →</a></div>}
 
     <section className="status" aria-live="polite">
       <div className="status-main">
@@ -342,7 +370,7 @@ export default function Dashboard() {
               : <p className="history-none">{t('hist.noForecast')}</p>}
           </li>)}
         </ul> : <div className="empty"><h3>{t('app.noHistory')}</h3><p>{t('app.noHistoryHint')}</p></div>)}
-      <footer className="sync">
+      {!sample && <footer className="sync">
         {millCode ? <>
           <span>{sync === 'syncing' ? t('sync.syncing') : sync === 'error' ? t('sync.error') : activeDays === 1 ? t('sync.synced.one') : t('sync.synced', { n: activeDays })}</span>
           <button type="button" className="link-button" onClick={disconnect}>{t('sync.leave')}</button>
@@ -355,7 +383,7 @@ export default function Dashboard() {
           <span>{t('app.savedBrowser')}</span>
           <button type="button" className="link-button" disabled={!ready} onClick={() => setJoining(true)}>{t('sync.use')}</button>
         </>}
-      </footer>
+      </footer>}
     </section>
 
     <dialog ref={rainDialog} className="rain-dialog" aria-label={t('fc.title')}>

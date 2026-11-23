@@ -241,3 +241,8 @@ dialog .check { display: flex; align-items: center; gap: 8px; margin: 16px 0 }
 }
 @keyframes enter { from { opacity: 0; transform: translateY(4px) } to { opacity: 1; transform: translateY(0) } }
 @keyframes answer-update { from { opacity: .5; transform: translateY(5px) } to { opacity: 1; transform: translateY(0) } }
+
+/* Sample mill notice */
+.sample-note { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 16px; margin-top: 24px; padding: 12px 18px; border-radius: 14px; background: #f7ecd0; color: #5e4514; font-size: .9rem; font-weight: 600 }
+.sample-note a { color: var(--green); font-weight: 700 }
+.sample-note + .status { margin-top: 16px }

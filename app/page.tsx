@@ -4,8 +4,8 @@ import Link from 'next/link'
 import { LanguageToggle, useT } from '../lib/i18n'
 import './landing.css'
 
-// A real testnet check from the production workspace (22 Nov 2026), shown as
-// a sample. Anyone can open the signal on Telegraph's public lookup.
+// A real forecast check from the production workspace (22 Nov 2026, Telegraph
+// test network), shown as the sample log. The record is public.
 const proofSignal = '0xd06ae8c038d83ecd2c1fc631210b7e87dad9cdb618abca1547b43d2056e1ee46'
 const proofUrl = `/proof/${proofSignal}`
 
@@ -28,9 +28,8 @@ export default function Landing() {
       <Link href="/" className="brand home-link"><img src="/paddyturn.svg" alt="" width="42" height="42" /><strong>PaddyTurn</strong></Link>
       <nav className="landing-links" aria-label="Main navigation">
         <a className="landing-nav" href="#how-it-works">{t('nav.how')}</a>
-        <a className="landing-nav" href="#proof">{t('nav.proof')}</a>
+        <a className="landing-nav" href="#sample-log">{t('nav.sample')}</a>
         <a className="landing-nav" href="#faq">{t('nav.faq')}</a>
-        <Link className="landing-nav" href="/docs">{t('nav.docs')}</Link>
         <LanguageToggle />
       </nav>
     </header>
@@ -41,12 +40,14 @@ export default function Landing() {
         <p>{t('hero.sub')}</p>
         <div className="landing-actions">
           <OpenWorkspace />
-          <a className="landing-secondary" href="#proof">{t('hero.see')}</a>
+          <Link className="landing-ghost" href="/app?sample=1">{t('hero.see')}</Link>
         </div>
         <p className="landing-trust">{t('hero.trust')}</p>
       </div>
       <div className="drying-floor-frame">
         <img className="drying-floor" src="/drying-floor.svg?v=2" alt={t('hero.alt')} width="620" height="430" />
+        <p className="scene-pill scene-dryer"><i aria-hidden="true" />{t('hero.pill.dryer')}</p>
+        <p className="scene-pill scene-floor"><i aria-hidden="true" />{t('hero.pill.floor')}</p>
       </div>
     </section>
     <section className="landing-audience" aria-label={t('aud.label')}>
@@ -77,7 +78,7 @@ export default function Landing() {
         {(['dry', 'rain', 'unsure'] as const).map(id => <div key={id}><dt>{t(`wx.${id}.t`)}</dt><dd>{t(`wx.${id}.d`)}</dd></div>)}
       </dl>
     </section>
-    <section id="proof" className="landing-proof" aria-labelledby="proof-title">
+    <section id="sample-log" className="landing-proof" aria-labelledby="proof-title">
       <div className="proof-copy">
         <h2 id="proof-title">{t('proof.title')}</h2>
         <p>{t('proof.sub')}</p>
@@ -87,14 +88,14 @@ export default function Landing() {
         <figcaption>{t('proof.caption')}</figcaption>
         <div className="evidence">
           <div className="evidence-head">
-            <span className="badge ok">{t('ev.verified')}</span>
+            <span className="badge ok">{t('proof.badge')}</span>
           </div>
           <div className="evidence-main">
             <p className="evidence-figure"><strong>0%</strong><span>{t('ev.chanceDay')} · clear</span></p>
             <p className="verdict dry">{t('proof.sample')}</p>
           </div>
-          <p className="evidence-meta">Pathein · Isobar Weather · {t('ev.costValue', { c: 0.01 })} · {t('ev.netNote')}</p>
-          <a className="evidence-link" href={proofUrl}>{t('ev.check')}</a>
+          <p className="evidence-meta">Pathein · Isobar Weather · 22 Nov 2026</p>
+          <a className="evidence-link" href={proofUrl}>{t('proof.open')}</a>
         </div>
       </figure>
     </section>
@@ -113,7 +114,6 @@ export default function Landing() {
         <Link href="/app">{t('foot.workspace')}</Link>
         <Link href="/docs">{t('foot.docs')}</Link>
         <a href="https://github.com/thesithunyein/paddyturn/issues">{t('foot.issue')}</a>
-        <a href="https://telegraphprotocol.com/">Telegraph</a>
       </nav>
       <p className="landing-note">{t('foot.note')}</p>
     </footer>

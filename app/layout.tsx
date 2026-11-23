@@ -4,13 +4,13 @@ import '@fontsource-variable/fraunces'
 import './style.css'
 import { LanguageProvider } from '../lib/i18n'
 
-const description = 'Dryer scheduling for small rice mills, with verified rain checks through Telegraph.'
+const description = 'Prioritize wet paddy batches, check local rain forecasts and schedule your mechanical dryer. Built for small rice mills and drying cooperatives.'
 export const metadata = {
   metadataBase: new URL('https://paddyturn.vercel.app'),
-  title: { default: 'PaddyTurn — Dry the right batch next', template: '%s · PaddyTurn' },
+  title: { default: 'PaddyTurn — Dryer scheduling for rice mills', template: '%s · PaddyTurn' },
   description,
   icons: { icon: '/paddyturn.svg' },
-  openGraph: { type: 'website', siteName: 'PaddyTurn', title: 'PaddyTurn — Dry the right batch next', description,
+  openGraph: { type: 'website', siteName: 'PaddyTurn', title: 'PaddyTurn — Dryer scheduling for rice mills', description,
     url: 'https://paddyturn.vercel.app' },
   twitter: { card: 'summary', title: 'PaddyTurn', description },
 }
