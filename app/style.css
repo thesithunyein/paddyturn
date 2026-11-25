@@ -237,13 +237,12 @@ dialog .check { display: flex; align-items: center; gap: 8px; margin: 16px 0 }
 
 /* ---------- Motion ---------- */
 @media (prefers-reduced-motion: no-preference) {
-  button { transition: background-color .16s ease, border-color .16s ease, color .16s ease, transform .16s ease }
+  button { transition: transform 100ms ease-out }
   button:enabled:active { transform: scale(.98) }
-  dialog[open], .assignment-notice { animation: enter 160ms ease-out }
-  .status-answer { animation: answer-update 260ms ease-out both }
+  dialog[open], .assignment-notice { animation: settle-in 150ms ease-out }
+  .status-answer { animation: settle-in 150ms ease-out }
 }
-@keyframes enter { from { opacity: 0; transform: translateY(4px) } to { opacity: 1; transform: translateY(0) } }
-@keyframes answer-update { from { opacity: .5; transform: translateY(5px) } to { opacity: 1; transform: translateY(0) } }
+@keyframes settle-in { from { transform: translateY(4px) } to { transform: translateY(0) } }
 
 /* Sample mill notice */
 .sample-note { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 16px; margin-top: 24px; padding: 12px 18px; border-radius: 14px; background: #f7ecd0; color: #5e4514; font-size: .9rem; font-weight: 600 }

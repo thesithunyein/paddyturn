@@ -51,9 +51,20 @@
 .landing-questions details + details { border-top: 1px solid var(--line) }
 .landing-questions summary { display: flex; justify-content: space-between; align-items: center; gap: 16px; min-height: 48px; cursor: pointer; padding: 12px 0; font-weight: 700; list-style: none }
 .landing-questions summary::-webkit-details-marker { display: none }
-.landing-questions summary span::after { content: '+'; color: var(--green); font-size: 1.2rem }
-.landing-questions details[open] summary span::after { content: '−' }
+.landing-questions summary span { position: relative; flex: 0 0 24px; height: 24px; border-radius: 50%; background: var(--green-soft); color: var(--green) }
+.landing-questions summary span::before, .landing-questions summary span::after { content: ''; position: absolute; inset: 11px 7px auto; height: 2px; border-radius: 1px; background: currentColor }
+.landing-questions summary span::after { transform: rotate(90deg) }
+.landing-questions details[open] summary span::after { transform: rotate(0) }
 .landing-questions p { padding-bottom: 16px }
+
+@media (prefers-reduced-motion: no-preference) {
+  .landing-action, .landing-ghost, .landing-action svg, .landing-questions summary span::after { transition: transform 150ms ease-out }
+  .landing-action:active, .landing-ghost:active { transform: translateY(1px) }
+  .landing-action:focus-visible svg { transform: translateX(3px) }
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .landing-action:hover svg { transform: translateX(3px) }
+}
 
 .landing-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px 24px; padding: 20px 0 0 }
 .landing-note { flex-basis: 100%; font-size: .82rem }
