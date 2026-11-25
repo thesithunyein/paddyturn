@@ -66,6 +66,9 @@
   .landing-action:hover svg { transform: translateX(3px) }
 }
 
+.landing-free { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px 24px; padding: clamp(20px, 4vw, 40px); margin-bottom: 24px; border-radius: var(--radius); background: var(--green-soft) }
+.landing .landing-free h2 { margin-bottom: 8px }
+.landing-free p { max-width: 48ch; color: var(--muted) }
 .landing-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px 24px; padding: 20px 0 0 }
 .landing-note { flex-basis: 100%; font-size: .82rem }
 :lang(my) .landing-hero h1 { font-size: clamp(1.85rem, 3.8vw, 3rem); line-height: 1.35; letter-spacing: normal; max-width: none }

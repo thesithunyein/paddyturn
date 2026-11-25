@@ -92,6 +92,10 @@ export default function Landing() {
         </details>)}
       </div>
     </section>
+    <section className="landing-free" aria-labelledby="free-title">
+      <div><h2 id="free-title">{t('free.title')}</h2><p>{t('free.body')}</p></div>
+      <Link className="primary landing-action" href="/app?sample=1">{t('hero.see')}</Link>
+    </section>
     <footer className="landing-footer">
       <Link href="/" className="brand home-link"><img src="/paddyturn.svg" alt="" width="32" height="32" /><strong>PaddyTurn</strong></Link>
       <nav className="landing-links" aria-label="Footer navigation">
