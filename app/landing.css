@@ -36,6 +36,23 @@
 .landing-steps p, .landing dd, .landing-questions p { color: var(--muted); font-size: .93rem }
 
 .landing-weather, .landing-proof { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(16px, 4vw, 56px) }
+.workflow-stage { margin: 0; padding: 0 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--green-soft); perspective: 680px; overflow: hidden }
+.workflow-drawing { display: block; width: 100%; height: auto }
+.workflow-wire { stroke: var(--green) }
+.workflow-track { stroke: var(--ring); stroke-width: 1; stroke-dasharray: 3 5 }
+.workflow-trace { stroke: var(--green); stroke-width: 2; stroke-linecap: round }
+.workflow-nodes { fill: var(--grain); stroke: var(--green); stroke-width: 1.5 }
+.landing section[id] { scroll-margin-block-start: 24px }
+@media (prefers-reduced-motion: no-preference) {
+  html:has(.landing) { scroll-behavior: smooth }
+  @supports (animation-timeline: view()) {
+    .workflow-trace { stroke-dasharray: 1; animation: workflow-trace linear both; animation-timeline: view(); animation-range: entry 10% cover 42% }
+  }
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .workflow-drawing { transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)); transition: transform 150ms ease-out }
+}
+@keyframes workflow-trace { from { stroke-dashoffset: 1 } to { stroke-dashoffset: 0 } }
 .landing dl, .landing dd { margin: 0 }
 .landing dl > div { padding-block: 12px; border-bottom: 1px solid var(--line-soft) }
 .landing dt { color: var(--green); font-weight: 750 }
