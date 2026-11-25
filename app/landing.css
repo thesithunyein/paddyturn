@@ -5,31 +5,34 @@
 
 .landing-hero {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
   align-items: stretch;
   gap: 16px;
-  padding-block: clamp(32px, 6vw, 80px);
+  padding-block: clamp(20px, 3vw, 36px);
 }
-.landing-copy { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding: clamp(24px, 5vw, 64px); border-radius: var(--radius); background: var(--grain) }
+.landing-copy { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding: clamp(24px, 3.6vw, 48px); border-radius: var(--radius); background: var(--green); color: var(--surface) }
 .landing-overview { display: grid; grid-template-rows: auto 1fr; gap: 16px; min-width: 0 }
-.landing-hero h1 { max-width: 15ch; font-size: clamp(2.4rem, 4.6vw, 4.25rem); line-height: 1.06; font-weight: 800 }
-.landing-copy > p { max-width: 42ch; color: var(--muted); margin: 16px 0 24px }
+.landing-hero h1 { max-width: 18ch; font-size: clamp(2.15rem, 4vw, 3.6rem); line-height: 1.08; font-weight: 800; color: inherit; text-wrap: balance }
+.landing-copy > p { max-width: 40ch; color: var(--surface); margin: 14px 0 20px }
 .landing-copy .landing-trust { font-size: .875rem; margin: 16px 0 0 }
 .landing-action, .landing-ghost { display: inline-flex; align-items: center; min-height: 44px; padding: 10px 16px; border-radius: var(--control-radius); font-size: .9rem; font-weight: 700 }
-.landing-ghost { color: var(--green); border: 1px solid var(--line); background: var(--surface) }
-.landing-ghost:hover { border-color: var(--ring) }
+.landing-copy .landing-action { background: #efbd51; border-color: #efbd51; color: var(--ink) }
+.landing-ghost { color: var(--surface); border: 1px solid var(--surface); background: transparent }
+.landing-copy :focus-visible { outline-color: var(--grain) }
+.landing-ghost:hover { background: var(--surface); color: var(--green) }
 .landing-action:hover { filter: brightness(.9) }
 
 .drying-floor-frame { position: relative; min-width: 0 }
-.drying-floor { display: block; width: 100%; height: auto; aspect-ratio: 2 / 1; object-fit: cover; border-radius: var(--radius); border: 1px solid var(--line) }
+.drying-floor { display: block; width: 100%; height: auto; aspect-ratio: 2.4 / 1; object-fit: contain; background: #e5eadb; border-radius: var(--radius); border: 1px solid var(--line) }
 .scene-pill { position: absolute; margin: 0; padding: 6px 10px; border-radius: 999px; background: var(--surface); color: var(--ink); font-size: .75rem; font-weight: 750; border: 1px solid var(--line) }
 .scene-dryer { top: 8%; right: 5% }
 .scene-floor { bottom: 8%; left: 5% }
 
 .landing-weather, .landing-proof, .landing-faq { border-top: 1px solid var(--line); padding-block: clamp(32px, 5vw, 64px) }
-.landing-steps { padding: clamp(20px, 3vw, 32px); border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface) }
+.landing-steps { padding: clamp(16px, 2.4vw, 26px); border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface) }
+.landing section.landing-steps h2 { font-size: 1.25rem; margin-bottom: 12px }
 .landing section h2 { font-size: clamp(1.45rem, 2.8vw, 2rem); line-height: 1.2; font-weight: 800; letter-spacing: -.035em; margin-bottom: 16px }
-.landing-steps ol { display: grid; gap: 12px; padding-left: 24px; margin: 0 }
+.landing-steps ol { display: grid; gap: 8px; padding-left: 24px; margin: 0 }
 .landing-steps li { padding-left: 4px }
 .landing-steps li::marker { color: var(--green); font-weight: 800 }
 .landing-steps h3 { font-size: 1rem; margin-bottom: 4px }
