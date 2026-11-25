@@ -9,7 +9,6 @@ import './landing.css'
 const proofSignal = '0xd06ae8c038d83ecd2c1fc631210b7e87dad9cdb618abca1547b43d2056e1ee46'
 const proofUrl = `/proof/${proofSignal}`
 
-const audience = [1, 2, 3] as const
 const steps = [1, 2, 3] as const
 const proofPoints = [1, 2, 3] as const
 const questions = [1, 2, 3, 4, 5, 6, 7] as const
@@ -33,7 +32,6 @@ export default function Landing() {
         <LanguageToggle />
       </nav>
     </header>
-    <div className="landing-progress" aria-hidden="true" />
     <section className="landing-hero">
       <div className="landing-copy">
         <h1>{t('hero.title')}</h1>
@@ -49,9 +47,6 @@ export default function Landing() {
         <p className="scene-pill scene-dryer"><i aria-hidden="true" />{t('hero.pill.dryer')}</p>
         <p className="scene-pill scene-floor"><i aria-hidden="true" />{t('hero.pill.floor')}</p>
       </div>
-    </section>
-    <section className="landing-audience" aria-label={t('aud.label')}>
-      {audience.map(n => <div key={n}><h2>{t(`aud.${n}.t`)}</h2><p>{t(`aud.${n}.d`)}</p></div>)}
     </section>
     <section id="how-it-works" className="landing-steps">
       <h2>{t('steps.title')}</h2>
