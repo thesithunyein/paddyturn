@@ -3,7 +3,9 @@
 
 /* ---------- Tokens ---------- */
 :root {
-  --display: 'Manrope Variable', system-ui, sans-serif;
+  --font-ui: 'Manrope Variable', system-ui, sans-serif;
+  --display: var(--font-ui);
+  --heading-weight: 750;
   --ink: #222924;
   --muted: #505951;
   --faint: #5e6a61;
@@ -20,7 +22,7 @@
   --rain-soft: #e6edf5;
   --radius: 16px;
   --shadow: none;
-  font-family: 'Manrope Variable', system-ui, sans-serif;
+  font-family: var(--font-ui);
   font-size: 100%;
   color: var(--ink);
   background: var(--bg);
@@ -33,8 +35,9 @@ main.app { max-width: 920px }
 .app .workspace-title { font-size: clamp(1.9rem, 4vw, 2.6rem); margin: 24px 0 16px }
 .app .workspace-title + .status { margin-top: 0 }
 h1, h2, h3 { margin: 0; color: var(--ink) }
-h1 { font-family: var(--display); font-optical-sizing: auto; font-weight: 590; font-size: clamp(2.4rem, 5.6vw, 4.4rem); letter-spacing: -.05em; line-height: 1.02 }
-h2 { font-size: 1.02rem; letter-spacing: -.02em }
+h1 { font-size: clamp(2.4rem, 5.6vw, 4.4rem); line-height: 1.1 }
+h1, h2, h3 { font-weight: var(--heading-weight); letter-spacing: -.03em }
+h2 { font-size: 1.02rem }
 p { margin: 0 }
 a { color: var(--green) }
 main a { text-decoration: none }
@@ -215,7 +218,7 @@ dialog .check { display: flex; align-items: center; gap: 8px; margin: 16px 0 }
 .lang-toggle button[aria-pressed=true] { background: var(--green); color: #fffaf0 }
 /* Latin fonts have no Myanmar glyphs: use system Myanmar fonts with taller lines. */
 :lang(my) body, :lang(my) h1, :lang(my) h2, :lang(my) h3, :lang(my) button, :lang(my) input, :lang(my) select,
-[lang=my] { font-family: "Noto Sans Myanmar", "Myanmar Text", "Pyidaungsu", Padauk, "Myanmar Sangam MN", system-ui, sans-serif }
+[lang=my] { --display: "Noto Sans Myanmar", "Myanmar Text", "Pyidaungsu", Padauk, "Myanmar Sangam MN", system-ui, sans-serif; font-family: var(--display) }
 :lang(my) body { line-height: 1.75 }
 /* Myanmar glyphs are much taller than Latin at the same size. */
 :lang(my) h1 { font-size: clamp(1.6rem, 3.2vw, 2.4rem); line-height: 1.45; letter-spacing: 0 }
@@ -257,9 +260,7 @@ dialog .check { display: flex; align-items: center; gap: 8px; margin: 16px 0 }
 /* ---------- De-template pass ----------
    Sentence-case labels instead of tracked uppercase kickers, one sans family
    with weight for hierarchy, white surfaces on a neutral background. */
-h1 { font-weight: 800; letter-spacing: -.035em; line-height: 1.06 }
-.status-answer { font-weight: 800; letter-spacing: -.03em }
-.evidence-figure strong { font-weight: 800; letter-spacing: -.03em }
+.status-answer, .evidence-figure strong { font-weight: var(--heading-weight); letter-spacing: -.03em }
 .status-label, .weather-switch > span, thead th, .proof-days thead th, .evidence-facts dt, .tech-row dt {
   text-transform: none; letter-spacing: 0; font-size: .82rem; font-weight: 600
 }

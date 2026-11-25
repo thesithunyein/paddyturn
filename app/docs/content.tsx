@@ -51,7 +51,7 @@ export const docs: Record<Lang, Docs> = {
         </ol>
         <p>If the record is not published yet, PaddyTurn uses the provider’s daily peak and labels it. If anything cannot be verified, it asks you to check the sky instead of guessing.</p></> },
       { id: 'verify', title: 'Verify a forecast', body: <>
-        <p>In <strong>History → Weather Log</strong>, choose <strong>Check on Telegraph</strong>. The proof page shows the verification, place, provider, cost and hourly rain chance, with a link to the raw record.</p>
+        <p>In <strong>History</strong>, open <strong>View forecast</strong> under the batch, then choose <strong>Check on Telegraph</strong>. The weather record shows where the forecast came from, what it cost, and the chance of rain.</p>
         <p>Example: <Link href={`/proof/${proof}`}>a real check for Pathein, 22 Nov 2026</Link>. Or check it from a terminal:</p>
         <pre><code>{code.curl}</code></pre></> },
       { id: 'sync', title: 'Sync devices', body: <>

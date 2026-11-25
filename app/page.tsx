@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import type { PointerEvent } from 'react'
 import { LanguageToggle, useT } from '../lib/i18n'
 import './landing.css'
 
@@ -11,36 +10,7 @@ const proofSignal = '0xd06ae8c038d83ecd2c1fc631210b7e87dad9cdb618abca1547b43d205
 const proofUrl = `/proof/${proofSignal}`
 
 const steps = [1, 2, 3] as const
-const proofPoints = [1, 2, 3] as const
 const questions = [1, 2, 3, 4, 5, 6, 7] as const
-
-function tiltWorkflow(event: PointerEvent<HTMLElement>) {
-  if (event.pointerType !== 'mouse' || !window.matchMedia('(prefers-reduced-motion: no-preference)').matches) return
-  const { currentTarget, clientX, clientY } = event
-  const bounds = currentTarget.getBoundingClientRect()
-  currentTarget.style.setProperty('--tilt-x', `${(0.5 - (clientY - bounds.top) / bounds.height) * 8}deg`)
-  currentTarget.style.setProperty('--tilt-y', `${((clientX - bounds.left) / bounds.width - 0.5) * 10}deg`)
-}
-
-function resetWorkflow(event: PointerEvent<HTMLElement>) {
-  event.currentTarget.style.removeProperty('--tilt-x')
-  event.currentTarget.style.removeProperty('--tilt-y')
-}
-
-function WorkflowScene() {
-  return <figure className="workflow-stage" aria-hidden="true" onPointerMove={tiltWorkflow} onPointerLeave={resetWorkflow}>
-    <svg className="workflow-drawing" viewBox="0 0 416 220" fill="none">
-      <path className="workflow-track" d="M18 169H398" />
-      <path className="workflow-trace" pathLength="1" d="M18 169H398" />
-      <g className="workflow-wire" strokeWidth="2" strokeLinejoin="round">
-        <path d="m28 109 53-26 53 26-53 26-53-26Zm0 0v18l53 26 53-26v-18M81 135v18M47 100l53 26m-33-36 53 26" />
-        <path d="M174 119a12 12 0 0 1 0-24h8a22 22 0 0 1 42-1h9a13 13 0 0 1 0 25h-59Zm16 11-4 13m20-13-4 13m20-13-4 13" />
-        <path d="m281 105 42-35 60 30v44l-60 21-42-21v-39Zm0 0 42 21 60-26m-60 26v39m0-95 41 26v21m-31 44v-21l14-5v21" />
-      </g>
-      <g className="workflow-nodes"><circle cx="81" cy="169" r="4" /><circle cx="208" cy="169" r="4" /><circle cx="323" cy="169" r="4" /></g>
-    </svg>
-  </figure>
-}
 
 function OpenWorkspace() {
   const t = useT()
@@ -84,7 +54,6 @@ export default function Landing() {
     <section className="landing-weather" aria-labelledby="weather-title">
       <div className="weather-intro">
         <h2 id="weather-title">{t('wx.title')}</h2>
-        <WorkflowScene />
       </div>
       <dl>
         {(['dry', 'rain', 'unsure'] as const).map(id => <div key={id}><dt>{t(`wx.${id}.t`)}</dt><dd>{t(`wx.${id}.d`)}</dd></div>)}
@@ -94,7 +63,6 @@ export default function Landing() {
       <div className="proof-copy">
         <h2 id="proof-title">{t('proof.title')}</h2>
         <p>{t('proof.sub')}</p>
-        <dl>{proofPoints.map(n => <div key={n}><dt>{t(`proof.${n}.t`)}</dt><dd>{t(`proof.${n}.d`)}</dd></div>)}</dl>
       </div>
       <figure className="proof-sample">
         <figcaption>{t('proof.caption')}</figcaption>
@@ -103,10 +71,9 @@ export default function Landing() {
             <span className="badge ok">{t('proof.badge')}</span>
           </div>
           <div className="evidence-main">
-            <p className="evidence-figure"><strong>0%</strong><span>{t('ev.chanceDay')} · clear</span></p>
+            <p className="evidence-figure"><strong>0%</strong><span>{t('proof.rainChance')}</span></p>
             <p className="verdict dry">{t('proof.sample')}</p>
           </div>
-          <p className="evidence-meta">Pathein · Isobar Weather · 22 Nov 2026</p>
           <a className="evidence-link" href={proofUrl}>{t('proof.open')}</a>
         </div>
       </figure>

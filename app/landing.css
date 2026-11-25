@@ -12,7 +12,7 @@
 }
 .landing-copy { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding: clamp(24px, 3.6vw, 48px); border-radius: var(--radius); background: var(--green); color: var(--surface) }
 .landing-overview { display: grid; grid-template-rows: auto 1fr; gap: 16px; min-width: 0 }
-.landing-hero h1 { max-width: 18ch; font-size: clamp(2.15rem, 4vw, 3.6rem); line-height: 1.08; font-weight: 800; color: inherit; text-wrap: balance }
+.landing-hero h1 { max-width: 18ch; font-size: clamp(2.15rem, 4vw, 3.6rem); line-height: 1.1; color: inherit; text-wrap: balance }
 .landing-copy > p { max-width: 40ch; color: var(--surface); margin: 14px 0 20px }
 .landing-copy .landing-trust { font-size: .875rem; margin: 16px 0 0 }
 .landing-action, .landing-ghost { display: inline-flex; align-items: center; min-height: 44px; padding: 10px 16px; border-radius: var(--control-radius); font-size: .9rem; font-weight: 700 }
@@ -28,7 +28,7 @@
 .landing-weather, .landing-proof, .landing-faq { border-top: 1px solid var(--line); padding-block: clamp(32px, 5vw, 64px) }
 .landing-steps { padding: clamp(16px, 2.4vw, 26px); border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface) }
 .landing section.landing-steps h2 { font-size: 1.25rem; margin-bottom: 12px }
-.landing section h2 { font-size: clamp(1.45rem, 2.8vw, 2rem); line-height: 1.2; font-weight: 800; letter-spacing: -.035em; margin-bottom: 16px }
+.landing section h2 { font-size: clamp(1.45rem, 2.8vw, 2rem); line-height: 1.2; margin-bottom: 16px }
 .landing-steps ol { display: grid; gap: 8px; padding-left: 24px; margin: 0 }
 .landing-steps li { padding-left: 4px }
 .landing-steps li::marker { color: var(--green); font-weight: 800 }
@@ -36,23 +36,13 @@
 .landing-steps p, .landing dd, .landing-questions p { color: var(--muted); font-size: .93rem }
 
 .landing-weather, .landing-proof { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(16px, 4vw, 56px) }
-.workflow-stage { margin: 0; padding: 0 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--green-soft); perspective: 680px; overflow: hidden }
-.workflow-drawing { display: block; width: 100%; height: auto }
-.workflow-wire { stroke: var(--green) }
-.workflow-track { stroke: var(--ring); stroke-width: 1; stroke-dasharray: 3 5 }
-.workflow-trace { stroke: var(--green); stroke-width: 2; stroke-linecap: round }
-.workflow-nodes { fill: var(--grain); stroke: var(--green); stroke-width: 1.5 }
 .landing section[id] { scroll-margin-block-start: 24px }
 @media (prefers-reduced-motion: no-preference) {
   html:has(.landing) { scroll-behavior: smooth }
-  @supports (animation-timeline: view()) {
-    .workflow-trace { stroke-dasharray: 1; animation: workflow-trace linear both; animation-timeline: view(); animation-range: entry 10% cover 42% }
-  }
 }
-@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-  .workflow-drawing { transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)); transition: transform 150ms ease-out }
-}
-@keyframes workflow-trace { from { stroke-dashoffset: 1 } to { stroke-dashoffset: 0 } }
+.landing-weather { align-items: start }
+.landing-weather dl { padding: 4px clamp(16px, 3vw, 28px); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius) }
+.landing-weather dl > div:last-child { border-bottom: 0 }
 .landing dl, .landing dd { margin: 0 }
 .landing dl > div { padding-block: 12px; border-bottom: 1px solid var(--line-soft) }
 .landing dt { color: var(--green); font-weight: 750 }
