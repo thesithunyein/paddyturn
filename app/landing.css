@@ -22,11 +22,8 @@
 .landing-ghost:hover { background: var(--surface); color: var(--green) }
 .landing-action:hover { filter: brightness(.9) }
 
-.drying-floor-frame { position: relative; min-width: 0 }
-.drying-floor { display: block; width: 100%; height: auto; aspect-ratio: 2.4 / 1; object-fit: contain; background: #e5eadb; border-radius: var(--radius); border: 1px solid var(--line) }
-.scene-pill { position: absolute; margin: 0; padding: 6px 10px; border-radius: 999px; background: var(--surface); color: var(--ink); font-size: .75rem; font-weight: 750; border: 1px solid var(--line) }
-.scene-dryer { top: 8%; right: 5% }
-.scene-floor { bottom: 8%; left: 5% }
+.drying-floor-frame { min-width: 0 }
+.drying-floor { display: block; width: 100%; height: auto; aspect-ratio: 2 / 1; object-fit: cover; object-position: center 58%; background: var(--green-soft); border-radius: var(--radius); border: 1px solid var(--line) }
 
 .landing-weather, .landing-proof, .landing-faq { border-top: 1px solid var(--line); padding-block: clamp(32px, 5vw, 64px) }
 .landing-steps { padding: clamp(16px, 2.4vw, 26px); border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface) }
@@ -78,5 +75,5 @@
   .landing .top { flex-wrap: wrap; gap: 8px 16px }
 }
 @media (max-width: 420px) {
-  .scene-pill { position: static; display: inline-block; margin: 8px 8px 0 0 }
+  .drying-floor { aspect-ratio: 3 / 2 }
 }

@@ -44,9 +44,7 @@ export default function Landing() {
       </div>
       <div className="landing-overview">
         <div className="drying-floor-frame">
-          <img className="drying-floor" src="/drying-floor.svg?v=2" alt={t('hero.alt')} width="620" height="430" />
-          <p className="scene-pill scene-dryer">{t('hero.pill.dryer')}</p>
-          <p className="scene-pill scene-floor">{t('hero.pill.floor')}</p>
+          <img className="drying-floor" src="/mill-drying-yard.webp" alt={t('hero.alt')} width="1440" height="960" fetchPriority="high" />
         </div>
         <section id="how-it-works" className="landing-steps">
           <h2>{t('steps.title')}</h2>

@@ -81,6 +81,9 @@ button:hover:not(:disabled) { filter: brightness(.97) }
 .pills li { padding: 5px 12px; border-radius: 999px; background: #ffffff1a; color: #e3eadb; font-size: .82rem }
 .pills strong { color: #fffaf0 }
 .status-actions { display: grid; gap: 14px; justify-items: end }
+.status-forecast { margin-top: 10px; color: var(--surface); font-size: .9rem; font-variant-numeric: tabular-nums }
+.forecast-option { display: grid; gap: 6px; justify-items: inherit }
+.forecast-option p { color: var(--surface); font-size: .78rem }
 .primary.on-dark { border-color: var(--grain); background: var(--grain); color: var(--green) }
 .ghost.on-dark { border-color: #ffffff40; background: transparent; color: #fffaf0 }
 .weather-switch { display: grid; gap: 6px; justify-items: end }

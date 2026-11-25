@@ -318,18 +318,21 @@ export default function Dashboard() {
     <header className="top"><Link href="/" className="brand home-link"><img src="/paddyturn.svg" alt="" width="40" height="40" /><strong>PaddyTurn</strong></Link><LanguageToggle /></header>
     <h1 className="workspace-title">{t('app.queueTitle')}</h1>
     {storageError && <p role="alert" className="error">{t('app.storageError')}</p>}
-    {sample && <div className="sample-note" role="status"><span>{t('sample.note')}</span><a href="/app">{t('sample.start')} →</a></div>}
+    {sample && <div className="sample-note"><span>{t('sample.note')}</span><a href="/app">{t('sample.start')} →</a></div>}
 
     {batches.length > 0 && <section className="status" aria-live="polite">
       <div className="status-main">
         <p className="status-label">{t('next.title')}</p>
         <p className="status-answer" key={next?.id ?? (decision.review ? 'review' : outdoor.length ? 'outdoor' : 'empty')}>{answer}</p>
         <p className="status-reason">{reason}</p>
+        {forecastCurrent && conditions !== 'unknown' && typeof forecast?.chance === 'number' &&
+          <p className="status-forecast"><strong>{forecast.chance}%</strong> {forecast.scope === 'window' && forecast.windowHours
+            ? t('ev.chanceWindow', { h: forecast.windowHours }) : t('ev.chanceDay')}</p>}
         {next && <ul className="pills"><li>{t('next.moisture')} <strong>{next.moisture}%</strong></li><li>{t('next.arrival')} <strong>{next.arrival}</strong></li></ul>}
       </div>
       <div className="status-actions">
         {next && <button className="primary on-dark" onClick={() => record(next)}><Icon name="check" /> {t('next.assign')}</button>}
-        {decision.review && <button className="primary on-dark" disabled={!ready} onClick={openRain}><Icon name="weather" /> {t('fc.title')}</button>}
+        {decision.review && <div className="forecast-option"><button className="primary on-dark" disabled={!ready} onClick={openRain}><Icon name="weather" /> {t('fc.title')}</button><p>{t('fc.accessHint')}</p></div>}
         {!decision.review && forecast?.evidence && <button className="ghost on-dark" onClick={openRain}>{t('fc.view')}</button>}
         {showWeather && <div className="weather-switch" role="group" aria-label={t('wx.card')}>
           <span>{t('wx.label')}</span>
