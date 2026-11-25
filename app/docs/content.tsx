@@ -39,7 +39,7 @@ export const docs: Record<Lang, Docs> = {
           <li>If the top batch can dry outdoors, set the weather, or buy a rain check.</li>
           <li><strong>Assign to dryer</strong>. History keeps the decision and any forecast proof.</li>
         </ol>
-        <p>Switch between English and Burmese with <strong>EN / မြန်မာ</strong> at the top of any page.</p></> },
+        <p>Switch languages with <strong>English / မြန်မာ</strong> at the top of any page.</p></> },
       { id: 'forecast', title: 'Rain checks', body: <>
         <p>A rain check is only offered when the top batch could dry outdoors. Each check:</p>
         <ol>
@@ -97,7 +97,7 @@ export const docs: Record<Lang, Docs> = {
           <li>ထိပ်ဆုံးအသုတ်ကို အပြင်လှန်းနိုင်လျှင် ရာသီဥတုကို သတ်မှတ်ပါ သို့မဟုတ် မိုးစစ်ဆေးချက် ဝယ်ပါ။</li>
           <li><strong>အခြောက်ခံစက်ထဲ ထည့်ရန်</strong> ကို နှိပ်ပါ။ ဆုံးဖြတ်ချက်နှင့် ခန့်မှန်းချက် အထောက်အထားကို မှတ်တမ်းတွင် သိမ်းသည်။</li>
         </ol>
-        <p>စာမျက်နှာတိုင်း၏ အပေါ်ရှိ <strong>EN / မြန်မာ</strong> ဖြင့် ဘာသာစကား ပြောင်းနိုင်သည်။</p></> },
+        <p>စာမျက်နှာတိုင်း၏ အပေါ်ရှိ <strong>English / မြန်မာ</strong> ဖြင့် ဘာသာစကား ပြောင်းနိုင်သည်။</p></> },
       { id: 'forecast', title: 'မိုးစစ်ဆေးချက်', body: <>
         <p>ထိပ်ဆုံးအသုတ်ကို အပြင်လှန်းနိုင်မှသာ မိုးစစ်ဆေးချက် ဝယ်နိုင်သည်။ စစ်ဆေးချက် တစ်ခုစီသည် -</p>
         <ol>

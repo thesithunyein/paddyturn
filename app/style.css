@@ -213,8 +213,9 @@ dialog .check { display: flex; align-items: center; gap: 8px; margin: 16px 0 }
 .proof-back a { color: var(--green); font-weight: 650 }
 
 /* ---------- Language toggle and Burmese ---------- */
-.lang-toggle { display: inline-flex; padding: 2px; border: 1px solid var(--line); border-radius: 999px; background: #fff }
-.lang-toggle button { border: 0; border-radius: 999px; padding: 4px 11px; font-size: .78rem; font-weight: 700; color: var(--muted); background: transparent }
+.lang-toggle { display: inline-flex; align-items: stretch; gap: 2px; padding: 3px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); flex: none }
+.lang-toggle button { min-height: 40px; border: 0; border-radius: 8px; padding: 4px 10px; font-size: .82rem; font-weight: 700; line-height: 1.4; color: var(--muted); background: transparent }
+.lang-toggle button:focus-visible { outline-offset: 1px }
 .lang-toggle button[aria-pressed=true] { background: var(--green); color: #fffaf0 }
 /* Latin fonts have no Myanmar glyphs: use system Myanmar fonts with taller lines. */
 :lang(my) body, :lang(my) h1, :lang(my) h2, :lang(my) h3, :lang(my) button, :lang(my) input, :lang(my) select,

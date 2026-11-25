@@ -33,7 +33,7 @@ export function LanguageToggle() {
   const { lang, setLang } = useLang()
   const t = useT()
   return <div className="lang-toggle" role="group" aria-label={t('lang.label')}>
-    <button type="button" aria-pressed={lang === 'en'} onClick={() => setLang('en')}>EN</button>
+    <button type="button" aria-pressed={lang === 'en'} onClick={() => setLang('en')} lang="en">English</button>
     <button type="button" aria-pressed={lang === 'my'} onClick={() => setLang('my')} lang="my">မြန်မာ</button>
   </div>
 }
