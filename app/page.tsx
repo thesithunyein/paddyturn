@@ -42,15 +42,17 @@ export default function Landing() {
         </div>
         <p className="landing-trust">{t('hero.trust')}</p>
       </div>
-      <div className="drying-floor-frame">
-        <img className="drying-floor" src="/drying-floor.svg?v=2" alt={t('hero.alt')} width="620" height="430" />
-        <p className="scene-pill scene-dryer"><i aria-hidden="true" />{t('hero.pill.dryer')}</p>
-        <p className="scene-pill scene-floor"><i aria-hidden="true" />{t('hero.pill.floor')}</p>
+      <div className="landing-overview">
+        <div className="drying-floor-frame">
+          <img className="drying-floor" src="/drying-floor.svg?v=2" alt={t('hero.alt')} width="620" height="430" />
+          <p className="scene-pill scene-dryer">{t('hero.pill.dryer')}</p>
+          <p className="scene-pill scene-floor">{t('hero.pill.floor')}</p>
+        </div>
+        <section id="how-it-works" className="landing-steps">
+          <h2>{t('steps.title')}</h2>
+          <ol>{steps.map(n => <li key={n}><h3>{t(`step.${n}.t`)}</h3><p>{t(`step.${n}.d`)}</p></li>)}</ol>
+        </section>
       </div>
-    </section>
-    <section id="how-it-works" className="landing-steps">
-      <h2>{t('steps.title')}</h2>
-      <ol>{steps.map(n => <li key={n}><h3>{t(`step.${n}.t`)}</h3><p>{t(`step.${n}.d`)}</p></li>)}</ol>
     </section>
     <section className="landing-weather" aria-labelledby="weather-title">
       <div className="weather-intro">

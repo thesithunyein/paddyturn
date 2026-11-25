@@ -6,10 +6,12 @@
 .landing-hero {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  align-items: center;
-  gap: clamp(24px, 5vw, 64px);
+  align-items: stretch;
+  gap: 16px;
   padding-block: clamp(32px, 6vw, 80px);
 }
+.landing-copy { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding: clamp(24px, 5vw, 64px); border-radius: var(--radius); background: var(--grain) }
+.landing-overview { display: grid; grid-template-rows: auto 1fr; gap: 16px; min-width: 0 }
 .landing-hero h1 { max-width: 15ch; font-size: clamp(2.4rem, 4.6vw, 4.25rem); line-height: 1.06; font-weight: 800 }
 .landing-copy > p { max-width: 42ch; color: var(--muted); margin: 16px 0 24px }
 .landing-copy .landing-trust { font-size: .875rem; margin: 16px 0 0 }
@@ -19,14 +21,15 @@
 .landing-action:hover { filter: brightness(.9) }
 
 .drying-floor-frame { position: relative; min-width: 0 }
-.drying-floor { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line) }
+.drying-floor { display: block; width: 100%; height: auto; aspect-ratio: 2 / 1; object-fit: cover; border-radius: var(--radius); border: 1px solid var(--line) }
 .scene-pill { position: absolute; margin: 0; padding: 6px 10px; border-radius: 999px; background: var(--surface); color: var(--ink); font-size: .75rem; font-weight: 750; border: 1px solid var(--line) }
 .scene-dryer { top: 8%; right: 5% }
 .scene-floor { bottom: 8%; left: 5% }
 
-.landing-steps, .landing-weather, .landing-proof, .landing-faq { border-top: 1px solid var(--line); padding-block: clamp(32px, 5vw, 64px) }
+.landing-weather, .landing-proof, .landing-faq { border-top: 1px solid var(--line); padding-block: clamp(32px, 5vw, 64px) }
+.landing-steps { padding: clamp(20px, 3vw, 32px); border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface) }
 .landing section h2 { font-size: clamp(1.45rem, 2.8vw, 2rem); line-height: 1.2; font-weight: 800; letter-spacing: -.035em; margin-bottom: 16px }
-.landing-steps ol { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; padding-left: 24px; margin: 0 }
+.landing-steps ol { display: grid; gap: 12px; padding-left: 24px; margin: 0 }
 .landing-steps li { padding-left: 4px }
 .landing-steps li::marker { color: var(--green); font-weight: 800 }
 .landing-steps h3 { font-size: 1rem; margin-bottom: 4px }
@@ -40,7 +43,8 @@
 .proof-sample { align-self: start; display: grid; gap: 8px; margin: 0 }
 .proof-sample figcaption { color: var(--muted); font-size: .875rem; font-weight: 650 }
 
-.landing-questions { max-width: 720px }
+.landing-faq h2 { text-align: center }
+.landing-questions { max-width: 640px; margin-inline: auto; text-align: left }
 .landing-questions details + details { border-top: 1px solid var(--line) }
 .landing-questions summary { display: flex; justify-content: space-between; align-items: center; gap: 16px; min-height: 48px; cursor: pointer; padding: 12px 0; font-weight: 700; list-style: none }
 .landing-questions summary::-webkit-details-marker { display: none }
@@ -53,7 +57,7 @@
 :lang(my) .landing-hero h1 { font-size: clamp(1.85rem, 3.8vw, 3rem); line-height: 1.35; letter-spacing: normal; max-width: none }
 
 @media (max-width: 760px) {
-  .landing-hero, .landing-steps ol, .landing-weather, .landing-proof { grid-template-columns: 1fr }
+  .landing-hero, .landing-weather, .landing-proof { grid-template-columns: 1fr }
   .landing .top { flex-wrap: wrap; gap: 8px 16px }
 }
 @media (max-width: 420px) {
