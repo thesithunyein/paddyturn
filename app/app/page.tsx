@@ -315,12 +315,12 @@ export default function Dashboard() {
     : priority === 'moisture' ? t('next.wettest') : t('next.first')
 
   return <main className="app">
-    <header className="top"><Link href="/" className="brand home-link"><img src="/paddyturn.svg" alt="" width="40" height="40" /><strong>PaddyTurn</strong></Link><div className="top-tools"><span>{t('app.title')}</span><LanguageToggle /></div></header>
-    <h1 className="sr">{t('app.queueTitle')}</h1>
+    <header className="top"><Link href="/" className="brand home-link"><img src="/paddyturn.svg" alt="" width="40" height="40" /><strong>PaddyTurn</strong></Link><LanguageToggle /></header>
+    <h1 className="workspace-title">{t('app.queueTitle')}</h1>
     {storageError && <p role="alert" className="error">{t('app.storageError')}</p>}
     {sample && <div className="sample-note" role="status"><span>{t('sample.note')}</span><a href="/app">{t('sample.start')} →</a></div>}
 
-    <section className="status" aria-live="polite">
+    {batches.length > 0 && <section className="status" aria-live="polite">
       <div className="status-main">
         <p className="status-label">{t('next.title')}</p>
         <p className="status-answer" key={next?.id ?? (decision.review ? 'review' : outdoor.length ? 'outdoor' : 'empty')}>{answer}</p>
@@ -339,7 +339,7 @@ export default function Dashboard() {
           }}>{t(`wx.opt.${option}`)}</button>)}</div>
         </div>}
       </div>
-    </section>
+    </section>}
 
     {assigned && <div className="assignment-notice" role="status">
       <span>{t('app.assigned', { id: assigned })}</span>
@@ -354,7 +354,7 @@ export default function Dashboard() {
         </div>
         <div className="panel-tools">
           {tab === 'queue' && ordered.length > 1 && <label className="sort">{t('app.sortBy')} <select disabled={!ready} value={priority} onChange={e => save({ ...workspace, priority: e.target.value as Priority })}><option value="moisture">{t('app.sort.moisture')}</option><option value="arrival">{t('app.sort.arrival')}</option></select></label>}
-          <button className="secondary" disabled={!ready} onClick={() => { setTab('queue'); open() }}><Icon name="plus" /> {t('app.add')}</button>
+          {(tab === 'history' || ordered.length > 0) && <button className="secondary" disabled={!ready} onClick={() => { setTab('queue'); open() }}><Icon name="plus" /> {t('app.add')}</button>}
         </div>
       </div>
       {tab === 'queue' ? (ordered.length ? <div className="scroll"><table><thead><tr><th>{t('app.col.batch')}</th><th>{t('app.col.arrival')}</th><th>{t('app.col.moisture')}</th><th>{t('app.col.outdoor')}</th><th><span className="sr">{t('app.col.actions')}</span></th></tr></thead>
