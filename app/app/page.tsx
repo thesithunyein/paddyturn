@@ -390,7 +390,7 @@ export default function Dashboard() {
     <dialog ref={rainDialog} className="rain-dialog" aria-label={t('fc.title')}>
       <div className="dialog-head"><h2>{t('fc.title')}</h2><button type="button" className="icon-button" aria-label={t('dlg.close')} onClick={() => rainDialog.current?.close()}><Icon name="close" /></button></div>
       <form onSubmit={checkForecast} className="rain-form">
-        <label>{t('fc.location')}<input name="location" type="text" minLength={2} maxLength={120} defaultValue="Pathein, Myanmar" required /></label>
+        <label>{t('fc.location')}<input name="location" type="text" minLength={2} maxLength={120} defaultValue={sample ? 'Pathein, Myanmar' : ''} required /></label>
         <label>{t('fc.code')}<input name="token" type="password" autoComplete="off" required /><small>{t('fc.ask')}</small></label>
         <details className="fc-more"><summary>{t('fc.more')}</summary>
           <div className="fields">

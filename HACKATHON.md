@@ -10,7 +10,7 @@ PaddyTurn helps a small rice mill decide which paddy batch gets its single dryer
 
 ## Commercial summary
 
-- **Who it is for:** small rice mills and cooperative drying stations with one mechanical dryer and outdoor drying floors, starting in Myanmar's Ayeyarwady delta (Pathein).
+- **Who it is for:** small rice mills and drying cooperatives that share one dryer and can dry some batches outdoors. The verified testnet example uses Pathein, Myanmar. Reviewers can enter their own mill location, subject to forecast provider coverage.
 - **What it improves:** the call on which batch takes the dryer when wet paddy arrives together. A wrong call wastes the dryer slot or leaves wet paddy exposed to rain.
 - **What it does today:** ranks batches by moisture or arrival, buys a rain-chance check only when an outdoor-eligible batch is at the top, and records the decision with Telegraph evidence. Testnet only.
 - **Why someone would adopt it:** a free weather app gives no record. PaddyTurn gives an auditable trail — ranked provider, returned rain chance, cost, signal hash, receipt — for cooperative disputes, owner review and crop-loss claims, at about one cent per decision.

@@ -3,7 +3,7 @@ import '@fontsource-variable/manrope'
 import './style.css'
 import { LanguageProvider } from '../lib/i18n'
 
-const description = 'Prioritize wet paddy batches, check local rain forecasts and schedule your mechanical dryer. Built for small rice mills and drying cooperatives.'
+const description = 'Choose which paddy batch gets the dryer using moisture readings and a local rain forecast. Built for rice mills and drying cooperatives.'
 export const metadata = {
   metadataBase: new URL('https://paddyturn.vercel.app'),
   title: { default: 'PaddyTurn — Dryer scheduling for rice mills', template: '%s · PaddyTurn' },
